@@ -1,0 +1,4 @@
+(sym_lib_table
+  (lib (name ADS1115Module)(type Legacy)(uri ${KIPRJMOD}/ADS1115Module.lib)(options "")(descr ""))
+  (lib (name USBSerialModule)(type Legacy)(uri ${KIPRJMOD}/USBSerialModule.lib)(options "")(descr ""))
+)
