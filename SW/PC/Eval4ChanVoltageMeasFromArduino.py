@@ -8,23 +8,19 @@ PC program to evaluate 4-channel voltage measurements from an 4-channel ADC conn
 
 Created 19th May 2021
 
-Last change on 19th May 2021
+Last change on 21st May 2021
 
 @author: Dr. Markus Reinhardt
 
 """
 from __future__ import print_function
 import sys
-import ntpath
+# import ntpath
 # import os
-import numpy as np
-import matplotlib
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
-from matplotlib.figure import Figure
-matplotlib.use('Qt5Agg')
 from PyQt5.Qt import *
 from PyQt5.QtCore import *
 from MeasurementsThread import *
+from VoltageMeasurement import VoltageMeasurementsWindow
 
 try:
     from PyQt5.QtCore import QString
@@ -32,255 +28,87 @@ except ImportError:
     # we are using Python3 so QString is not defined
     QString = type("")
 
-class MplCanvas(FigureCanvasQTAgg):
-    def __init__(self, parent=None, width=5, height=4, dpi=100):
-        fig = Figure(figsize=(width, height), dpi=dpi)
-        self.axes = fig.add_subplot(111)
-        super(MplCanvas, self).__init__(fig)
-        
-class VoltageMeasurementWidget(QWidget):
-    def __init__(self, parent=None, width=5, height=4, dpi=100):
-
-
-class VoltageMeasurementsCtrlWindow(QMainWindow):
+class MainWindow(QMainWindow):
     def __init__(self, *rest):
         QMainWindow.__init__(self)
-        
+
         # set the command message interface
         self.msgIF = MsgInterface()
-                                
+        
+        # create frame
+        frame = QFrame()
+        frame.setStyleSheet("QFrame { background-color: white }")
+        frameLayout = QGridLayout(frame)
+        
+        # create four voltage displays
+        voltageMeasurementDisplay1 = VoltageMeasurementsWindow("Channel1: ")
+        voltageMeasurementDisplay2 = VoltageMeasurementsWindow("Channel2: ")
+        voltageMeasurementDisplay3 = VoltageMeasurementsWindow("Channel3: ")
+        voltageMeasurementDisplay4 = VoltageMeasurementsWindow("Channel4: ")
+
+        # the on/off control
         # on / off control values for the measurements
         self.OnOffControlValueMeasurements = 1
+        self.createOnOffControlMeasurements()
+
+        # the file selection and evaluation group
+        self.createConfigFileGroupBox()
+
+        # the status message box
+        self.createStatusMsgBox()
+
+        # - the manufacturer label
+        self.createManufacturerLabel()
         
-        # measured values of voltage (actual and mean)
-        self.actualTemperature = 21.0
-        self.meanTemperature = 21.0
-        self.noValidMeasurements = 0
+        # create the main (top level) layout
+        frameLayout.addWidget(voltageMeasurementDisplay1.voltagePlotGroupBox,0,0,1,3)
+        frameLayout.addWidget(voltageMeasurementDisplay2.voltagePlotGroupBox,0,3,1,3)
+        frameLayout.addWidget(voltageMeasurementDisplay3.voltagePlotGroupBox,1,0,1,3)
+        frameLayout.addWidget(voltageMeasurementDisplay4.voltagePlotGroupBox,1,3,1,3)
+        frameLayout.addWidget(self.onOffCtrlGroupboxMeasurements,2,0)
+        frameLayout.addWidget(self.configFileGroupBox,2,1)
+        frameLayout.addWidget(self.statusGroupBox,2,2,1,3)
+        frameLayout.addWidget(self.manufacturerGroupbox,2,5)
         
-        # array of measurements
-        self.initMeasurementsArray()  
+        # set the central widget
+        self.setCentralWidget(frame)
+
+        # set window title
+        self.setWindowTitle(self.tr("4-Channel Voltage Measurements"))
         
         # Start the measurement thread
         periodSec = 2.0
         measurementSlot = self.handleMeasurements;
         measurementsThreadObj = MeasurementsThread(measurementSlot,periodSec)
         measurementsThreadObj.start()
-       
-        # create central widget
-        self.CreateMainWidget()
-                
-    def CreateMainWidget(self):
-        frame = QFrame()
-        frame.setStyleSheet("QFrame { background-color: white }")
-        frameLayout = QGridLayout(frame)
         
-        # create the plot widget
-        self.createPlotWidget1()
-        
-        # the status message box
-        self.createStatusMsgBox()
-        
-        # create the mean temperature display
-        self.createMeanTemperatureDisplay()
-
-        # the file selection and evaluation group
-        self.createConfigFileGroupBox()
-
-        # the on/off control
-        self.createOnOffControlMeasurements()
-
-        # - the manufacturer label
-        self.createManufacturerLabel()
-        
-        # create the main (top level) layout
-        frameLayout.addWidget(self.temperaturePlotGroupBox,0,0)
-        frameLayout.addWidget(self.onOffCtrlGroupboxMeasurements, 0, 1)
-        frameLayout.addWidget(self.meanTemperatureGroupBox,1,0)
-        frameLayout.addWidget(self.configFileGroupBox, 1, 1)
-        frameLayout.addWidget(self.statusGroupBox,2,0)
-        frameLayout.addWidget(self.manufacturerGroupbox, 2, 1)
-        
-        # set the central widget
-        self.setCentralWidget(frame)
-
-        # set window title
-        self.setWindowTitle(self.tr("Temperature measurements with DS18B20 V0.1"))
-        
-    def getStyleSheet(self, path):
-        f = QFile(path)
-        f.open(QFile.ReadOnly | QFile.Text)
-        stylesheet = QTextStream(f).readAll()
-        f.close()
-        return stylesheet    
-       
-    def retFloatFromValueString(valueString):
-        floatValue = float(valueString)
-        return floatValue
- 
-    def createPlotWidget1(self):
-        self.temperaturePlotGroupBox = QGroupBox(self.tr(''))
-        self.temperaturePlotGroupBox.setStyleSheet(self.getStyleSheet("./styles_lightgrey.qss")) 
-        titleFont = QFont()
-        titleFont.setFamily("Arial")
-        titleFont.setFixedPitch(True)
-        titleFont.setPointSize(25)
-        self.temperaturePlotGroupBox.setFont(titleFont)
-        
-        self.plotCanvas =  MplCanvas(self, width=5, height=5, dpi=100)
-        self.plotCanvas.axes.plot(self.measuredTemperatureArray)
-        self.plotCanvas.axes.set_xlabel('discrete time instance')
-        self.plotCanvas.axes.set_ylabel('temperature / °C')
-        self.plotCanvas.axes.grid()
-        
-        # create the layout and add the plot widget
-        self.temperaturePlotVBox = QVBoxLayout()
-        self.temperaturePlotVBox.addWidget(self.plotCanvas)
-        
-        # set the font to be used later
-        labelFont = QFont()
-        labelFont.setFamily("Arial")
-        labelFont.setFixedPitch(True)
-        labelFont.setPointSize(20)
-        
-        # create the label and edit for the mean temperature
-        self.actualTemperatureLabel = QLabel()
-        self.actualTemperatureLabel.setStyleSheet("QLabel { background-color: lightgrey;  }")
-        self.actualTemperatureLabel.setText('Actual temperature / °C: ')
-        self.actualTemperatureLabel.setFixedSize(340, 30)
-        self.actualTemperatureLabel.setAlignment(Qt.AlignLeft)
-        self.actualTemperatureLabel.setFont(labelFont)
-
-        # font for the measurement displays
-        displayFont = QFont()
-        displayFont.setFamily("Arial")
-        displayFont.setFixedPitch(True)
-        displayFont.setPointSize(40)
-
-        # mean temperature display edit
-        self.actualTemperatureEdit = QLineEdit()
-        self.actualTemperatureEdit.setText("{:2.2f}".format(self.actualTemperature))
-        self.actualTemperatureEdit.setFont(displayFont)
-        self.actualTemperatureEdit.setFixedSize(140, 100)
-        self.actualTemperatureEdit.setAlignment(Qt.AlignRight)
-        self.actualTemperatureEdit.setReadOnly(True)
-        
-        # create the HBox for the actual temperature display
-        self.actualTemperatureHBox = QHBoxLayout()
-        # add the widgets
-        self.actualTemperatureHBox.addWidget(self.actualTemperatureLabel)
-        self.actualTemperatureHBox.addWidget(self.actualTemperatureEdit)
-        
-        # add the mean temperature display HBox
-        self.temperaturePlotVBox.addLayout(self.actualTemperatureHBox)
-        
-        # add the layout to the measurement box
-        self.temperaturePlotGroupBox.setLayout(self.temperaturePlotVBox)
-        
-    
-    def updatePlot(self):
-        self.plotCanvas.axes.clear()
-        self.plotCanvas.axes.plot(self.measuredTemperatureArray)
-        self.plotCanvas.axes.grid()
-        self.plotCanvas.axes.set_xlabel('discrete time instance')
-        self.plotCanvas.axes.set_ylabel('temperature / °C')
-        # update the plot
-        self.plotCanvas.draw()
-        
-    def updateMeanTemperature(self):
-        # calculate the mean temperature value
-        self.meanTemperature = np.mean(self.measuredTemperatureArray[0:self.noValidMeasurements])
-        # update the mean temperature edit
-        self.meanTemperatureEdit.setText("{:2.2f}".format(self.meanTemperature))        
-        
-    def updateMeasurementsArray(self, temperatureValue):
-        self.measuredTemperatureArray[self.arrayIndex] = temperatureValue
-        self.arrayIndex = self.arrayIndex + 1
-        if (self.arrayIndex > self.maxArraySize) :
-            self.arrayIndex = 0
-    
-    def initMeasurementsArray(self):
-        self.maxArraySize = 100
-        self.measuredTemperatureArray = 25.0*np.ones(self.maxArraySize+1)
-        self.arrayIndex = 0
-        self.noValidMeasurements = 0
-         
-    def createMeanTemperatureDisplay(self):
-    ################### Measurement widgets ##############################################
-        self.meanTemperatureGroupBox = QGroupBox(self.tr('Mean temperature'))
-        self.meanTemperatureGroupBox.setStyleSheet(self.getStyleSheet("./styles_grey.qss")) 
+    def createManufacturerLabel(self):
+        self.manufacturerGroupbox = QGroupBox(self.tr("Made by"))
+        self.manufacturerGroupbox.setStyleSheet(self.getStyleSheet("./styles_grey.qss")) 
         titleFont = QFont()
         titleFont.setFamily("Arial")
         titleFont.setFixedPitch(True)
         titleFont.setPointSize(14)
-        self.meanTemperatureGroupBox.setFont(titleFont)
-        
-        # set the font to be used later
+        self.manufacturerGroupbox.setFont(titleFont)
+
+        self.manufacturerLayout = QVBoxLayout()
+        # self.manufacturerGroupbox.setFixedSize(200, 50)
+        # the label
+        self.manufacturerLabel = QLabel()
         font = QFont()
-        font.setFamily("Arial")
-        font.setFixedPitch(True)
-        font.setPointSize(20)
-
-        # font for the measurement displays
-        displayFont = QFont()
-        displayFont.setFamily("Arial")
-        displayFont.setFixedPitch(True)
-        displayFont.setPointSize(40)
-        
-        #### temperature measurement widgets ###
-        # temperature measurement widgets horizontally stacked
-        self.meanTemperatureHBox = QHBoxLayout()
-        
-        # mean temperature display label
-        self.meanTemperatureLabel = QLabel()
-        self.meanTemperatureLabel.setStyleSheet("QLabel { background-color: grey;  }")
-        self.meanTemperatureLabel.setText('Mean temperature / °C: ')
-        self.meanTemperatureLabel.setFixedSize(340, 30)
-        self.meanTemperatureLabel.setAlignment(Qt.AlignLeft)
-        self.meanTemperatureLabel.setFont(font)
-        
-        # mean temperature display edit
-        self.meanTemperatureEdit = QLineEdit()
-        self.meanTemperatureEdit.setText("{:2.2f}".format(self.meanTemperature))
-        self.meanTemperatureEdit.setFont(displayFont)
-        self.meanTemperatureEdit.setFixedSize(140, 100)
-        self.meanTemperatureEdit.setAlignment(Qt.AlignRight)
-        self.meanTemperatureEdit.setReadOnly(True)
-
-        # add the widgets
-        self.meanTemperatureHBox.addWidget(self.meanTemperatureLabel)
-        self.meanTemperatureHBox.addWidget(self.meanTemperatureEdit)
-
-        # add the layout to the measurement box
-        self.meanTemperatureGroupBox.setLayout(self.meanTemperatureHBox)
-
-    def createStatusMsgBox(self):
-        self.statusGroupBox = QGroupBox(self.tr('System Status'))
-        self.statusGroupBox.setFixedSize(780, 100)
-        self.statusGroupBox.setStyleSheet(self.getStyleSheet("./styles_lightgrey.qss")) 
-        titleFont = QFont()
-        titleFont.setFamily("Arial")
-        titleFont.setFixedPitch(True)
-        titleFont.setPointSize(14)
-        self.statusGroupBox.setFont(titleFont)
-        
-        # the label to display the status
-        labelFont = QFont()
-        labelFont.setFamily("Arial")
-        labelFont.setFixedPitch(True)
-        labelFont.setPointSize(14)
+        font.setFamily("Tokyo")
+        font.setPointSize(10)
+        font.setWeight(QFont.Bold)
+        font.setItalic(True)
+        self.manufacturerLabel.setFont(font)
         frameStyle = QFrame.Sunken | QFrame.Panel
-        self.statusLabel = QLabel()
-        self.statusLabel.setFrameStyle(frameStyle)
-        self.statusLabel.setFixedSize(400, 40)
-        self.statusLabel.setText("running")
-        self.statusLabel.setFont(labelFont)
-        
-        # define the widget
-        layout = QHBoxLayout()
-        layout.addWidget(self.statusLabel)
+        self.manufacturerLabel.setFrameStyle(frameStyle)
+        self.manufacturerLabel.setWordWrap(True)
+        self.manufacturerLabel.setText(self.tr("Dr. Markus Reinhardt\nHoMeR "))
+        self.manufacturerLabel.setFixedSize(200,50)
 
-        # assign the layout to the group box
-        self.statusGroupBox.setLayout(layout)        
+        self.manufacturerLayout.addWidget(self.manufacturerLabel)
+        self.manufacturerGroupbox.setLayout(self.manufacturerLayout)
 
     def createConfigFileGroupBox(self):
         self.configFileGroupBox = QGroupBox(self.tr('Measurements Config.'))
@@ -321,7 +149,7 @@ class VoltageMeasurementsCtrlWindow(QMainWindow):
         titleFont.setFixedPitch(True)
         titleFont.setPointSize(14)
         self.onOffCtrlGroupboxMeasurements.setFont(titleFont)
-        self.onOffCtrlGroupboxMeasurements.setFixedSize(220, 400)
+        self.onOffCtrlGroupboxMeasurements.setFixedSize(220, 180)
        
         # the state label
         self.onOffControlLabelMeasurements = QLabel()
@@ -346,39 +174,41 @@ class VoltageMeasurementsCtrlWindow(QMainWindow):
         # add all widgets to the layout
         self.onOffControlLayoutMeasurements = QVBoxLayout()
         # self.onOffControlLayoutMeasurements.addWidget(self.parameterUpdateButtonMeasurements)
+ 
         self.onOffControlLayoutMeasurements.addWidget(self.onOffControlButtonMeasurements)
         self.onOffControlLayoutMeasurements.addWidget(self.onOffControlLabelMeasurements)
         self.onOffControlLayoutMeasurements.addWidget(self.resetControlButtonMeasurements)
         self.onOffCtrlGroupboxMeasurements.setLayout(self.onOffControlLayoutMeasurements)
 
-    def createManufacturerLabel(self):
-        self.manufacturerGroupbox = QGroupBox(self.tr("Made by"))
-        self.manufacturerGroupbox.setStyleSheet(self.getStyleSheet("./styles_grey.qss")) 
+    def createStatusMsgBox(self):
+        self.statusGroupBox = QGroupBox(self.tr('System Status'))
+        self.statusGroupBox.setFixedSize(780, 180)
+        self.statusGroupBox.setStyleSheet(self.getStyleSheet("./styles_lightgrey.qss")) 
         titleFont = QFont()
         titleFont.setFamily("Arial")
         titleFont.setFixedPitch(True)
         titleFont.setPointSize(14)
-        self.manufacturerGroupbox.setFont(titleFont)
-
-        self.manufacturerLayout = QVBoxLayout()
-        # self.manufacturerGroupbox.setFixedSize(200, 50)
-        # the label
-        self.manufacturerLabel = QLabel()
-        font = QFont()
-        font.setFamily("Tokyo")
-        font.setPointSize(10)
-        font.setWeight(QFont.Bold)
-        font.setItalic(True)
-        self.manufacturerLabel.setFont(font)
-        frameStyle = QFrame.Sunken | QFrame.Panel
-        self.manufacturerLabel.setFrameStyle(frameStyle)
-        self.manufacturerLabel.setWordWrap(True)
-        self.manufacturerLabel.setText(self.tr("Dr. Markus Reinhardt\nHoMeR "))
-        self.manufacturerLabel.setFixedSize(200, 50)
-
-        self.manufacturerLayout.addWidget(self.manufacturerLabel)
-        self.manufacturerGroupbox.setLayout(self.manufacturerLayout)
+        self.statusGroupBox.setFont(titleFont)
         
+        # the label to display the status
+        labelFont = QFont()
+        labelFont.setFamily("Arial")
+        labelFont.setFixedPitch(True)
+        labelFont.setPointSize(14)
+        frameStyle = QFrame.Sunken | QFrame.Panel
+        self.statusLabel = QLabel()
+        self.statusLabel.setFrameStyle(frameStyle)
+        self.statusLabel.setFixedSize(400, 40)
+        self.statusLabel.setText("running")
+        self.statusLabel.setFont(labelFont)
+        
+        # define the widget
+        layout = QHBoxLayout()
+        layout.addWidget(self.statusLabel)
+
+        # assign the layout to the group box
+        self.statusGroupBox.setLayout(layout) 
+
     def setOpenFileName(self):
         # selectedFilter = QString()
         fileName = QFileDialog.getOpenFileName(self,
@@ -393,25 +223,32 @@ class VoltageMeasurementsCtrlWindow(QMainWindow):
         else:
             self.CtrlFileGiven = False
         
+    def getStyleSheet(self, path):
+        f = QFile(path)
+        f.open(QFile.ReadOnly | QFile.Text)
+        stylesheet = QTextStream(f).readAll()
+        f.close()
+        return stylesheet 
+
     def handleMeasurements(self):
         if (self.OnOffControlValueMeasurements == 1):
-            # request temperature measurements from the temperature sensor and update the display
+            # request voltage measurements from the voltage sensor and update the display
             try:
-                measuredTemperature = self.msgIF.GetMeasuredValue()
-                print("measuredTemperature =", measuredTemperature )
+                measuredVoltages = self.msgIF.GetMeasuredValues()
+                print("measuredVoltages =", measuredVoltages )
                 
                 # valid measurement received   --> update plot and displays
-                self.actualTemperature = measuredTemperature
+                self.actualVoltages = measuredVoltages
                 self.noValidMeasurements = self.noValidMeasurements + 1
                 if (self.noValidMeasurements > self.maxArraySize):
                     self.noValidMeasurements = self.maxArraySize
-                self.actualTemperatureEdit.setText("{:2.2f}".format(measuredTemperature))
-                self.updateMeasurementsArray(measuredTemperature)
+                self.actualVoltageEdit.setText("{:2.2f}".format(measuredVoltages))
+                self.updateMeasurementsArray(measuredVoltages)
                 self.updatePlot()
-                self.updateMeanTemperature()
+                self.updateMeanVoltage()
             except TypeError:
                 print("failed to get correct measurements")
-      
+
     def OnOffGenMeasurements(self):
         if self.OnOffControlValueMeasurements == 1:
             self.OnOffControlValueMeasurements = 0
@@ -430,11 +267,11 @@ class VoltageMeasurementsCtrlWindow(QMainWindow):
         self.onOffControlLabelMeasurements.setText(self.tr("Measurements are <b>ON</b>"))
         self.msgIF.ResetMeasurements()
         self.initMeasurementsArray()
-        
+ 
 if __name__ == '__main__':
     a = QApplication(sys.argv)
-    window = TemperatureMeasurementsCtrlWindow()
-    # window.DemoPlot()
-    window.resize(1000, 600)
+    window = MainWindow()
+    window.show()
+    window.resize(1000, 1000)
     window.show()
     a.exec_()

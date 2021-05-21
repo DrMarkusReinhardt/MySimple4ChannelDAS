@@ -33,8 +33,6 @@ class VoltageMeasurementsWindow(QWidget):
         # set the command message interface
         # self.msgIF = MsgInterface()
                                 
-        # on / off control values for the measurements
-        self.OnOffControlValueMeasurements = 1
         
         # measured values of voltage (actual and mean)
         self.actualVoltage = 0.0

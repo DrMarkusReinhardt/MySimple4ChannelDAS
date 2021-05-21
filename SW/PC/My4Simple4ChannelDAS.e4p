@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Project SYSTEM "Project-5.1.dtd">
+<!-- eric project file for project My4Simple4ChannelDAS -->
+<!-- Saved: 2021-05-21, 10:55:38 -->
+<!-- Copyright (C) 2021 Dr. Markus Reinhardt, drmarkus.reinhardt@arcor.de -->
+<Project version="5.1">
+  <Language>en_US</Language>
+  <Hash>c164ac6d66a920563606eef4ed64658146ad7461</Hash>
+  <ProgLanguage mixed="0">Python3</ProgLanguage>
+  <ProjectType>PyQt5</ProjectType>
+  <Description>A project to build-up a simple 4-channel low sample rate, high accuracy 
+(16-bit ADC) Data Acquisition System (DAS) to support general universal measurements.
+</Description>
+  <Version>0.1</Version>
+  <Author>Dr. Markus Reinhardt</Author>
+  <Email>drmarkus.reinhardt@arcor.de</Email>
+  <Eol index="0"/>
+  <Sources>
+    <Source>Eval4ChanVoltageMeasFromArduino.py</Source>
+    <Source>EvalMeasurementsFromArduinoOnPC.py</Source>
+    <Source>MeasurementsThread.py</Source>
+    <Source>MyTestApp.py</Source>
+    <Source>VoltageMeasurement.py</Source>
+    <Source>__init__.py</Source>
+  </Sources>
+  <Others>
+    <Other>README.md</Other>
+  </Others>
+  <MainScript>Eval4ChanVoltageMeasFromArduino.py</MainScript>
+  <Vcs>
+    <VcsType>None</VcsType>
+  </Vcs>
+  <FiletypeAssociations>
+    <FiletypeAssociation pattern="*.e4p" type="OTHERS"/>
+    <FiletypeAssociation pattern="*.idl" type="INTERFACES"/>
+    <FiletypeAssociation pattern="*.md" type="OTHERS"/>
+    <FiletypeAssociation pattern="*.proto" type="PROTOCOLS"/>
+    <FiletypeAssociation pattern="*.py" type="SOURCES"/>
+    <FiletypeAssociation pattern="*.py3" type="SOURCES"/>
+    <FiletypeAssociation pattern="*.pyw" type="SOURCES"/>
+    <FiletypeAssociation pattern="*.pyw3" type="SOURCES"/>
+    <FiletypeAssociation pattern="*.qm" type="TRANSLATIONS"/>
+    <FiletypeAssociation pattern="*.qrc" type="RESOURCES"/>
+    <FiletypeAssociation pattern="*.rst" type="OTHERS"/>
+    <FiletypeAssociation pattern="*.ts" type="TRANSLATIONS"/>
+    <FiletypeAssociation pattern="*.txt" type="OTHERS"/>
+    <FiletypeAssociation pattern="*.ui" type="FORMS"/>
+    <FiletypeAssociation pattern="GNUmakefile" type="OTHERS"/>
+    <FiletypeAssociation pattern="Makefile" type="OTHERS"/>
+    <FiletypeAssociation pattern="README" type="OTHERS"/>
+    <FiletypeAssociation pattern="README.*" type="OTHERS"/>
+    <FiletypeAssociation pattern="makefile" type="OTHERS"/>
+  </FiletypeAssociations>
+</Project>

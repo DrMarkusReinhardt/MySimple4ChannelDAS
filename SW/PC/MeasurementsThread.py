@@ -54,7 +54,7 @@ class MsgInterface(object):
                          ['error',''],
                          ['askUsIfReady',''],
                          ['youAreReady',''],
-                         ['sendMeasuredValue',''],
+                         ['sendMeasuredValues',''],
                          ['turnOnMeasurements',''],
                          ['turnOffMeasurements',''],
                          ['resetMeasurements',''],
@@ -98,12 +98,12 @@ class MsgInterface(object):
         """
         print(('Error:', args[0][0]))
        
-    def GetMeasuredValue(self):
-        # print("GetMeasuredValue")
+    def GetMeasuredValues(self):
+        # print("GetMeasuredValues")
         try:
             if self.sem.available() > 0:
                 self.sem.acquire(1)
-                self.messenger.send('sendMeasuredValue')
+                self.messenger.send('sendMeasuredValues')
                 time.sleep(0.1)
                 ReceiveMsg = self.messenger.receive()
                 self.sem.release(1)
