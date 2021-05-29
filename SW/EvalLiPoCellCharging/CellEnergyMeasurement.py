@@ -30,10 +30,6 @@ class CellEnergyMeasurementsWindow(QWidget):
     def __init__(self, titleString):
         QWidget.__init__(self)
         
-        # set the command message interface
-        # self.msgIF = MsgInterface()
-                                
-        
         # measured values of energy (actual and mean)
         self.actualEnergy = 0.0
         self.meanEnergy = 0.0
@@ -44,17 +40,10 @@ class CellEnergyMeasurementsWindow(QWidget):
         
         # create the plot widget
         self.createPlotWidget(titleString)
-        print("plot widget created")
-        self.updatePlot(titleString)
-        
-        # Start the measurement thread
-        # periodSec = 5.0
-        # measurementSlot = self.handleMeasurements;
-        # measurementsThreadObj = MeasurementsThread(measurementSlot,periodSec)
-        # measurementsThreadObj.start()
-        
+        print("Energy plot widget created")
+        self.updatePlot(self.measuredEnergyArray)       
 
-    def createPlotWidget(self,  channelString):
+    def createPlotWidget(self,  titleString):
         self.energyPlotGroupBox = QGroupBox(self.tr(''))
         self.energyPlotGroupBox.setStyleSheet(self.getStyleSheet("./styles_lightgrey.qss")) 
         titleFont = QFont()
@@ -66,7 +55,7 @@ class CellEnergyMeasurementsWindow(QWidget):
         self.plotCanvas =  MplCanvas(self, width=7, height=3, dpi=100)
         self.plotCanvas.axes.plot(self.measuredEnergyArray)
         self.plotCanvas.axes.set_xlabel('discrete time instance')
-        self.plotCanvas.axes.set_ylabel(channelString + 'energy / Wh')
+        self.plotCanvas.axes.set_ylabel('Cell Energy / Wh')
         self.plotCanvas.axes.grid()
         self.plotCanvas.setFixedSize(700, 370)
         
@@ -96,9 +85,9 @@ class CellEnergyMeasurementsWindow(QWidget):
 
         # mean Energy display edit
         self.actualEnergyEdit = QLineEdit()
-        self.actualEnergyEdit.setText("{:2.2f}".format(self.actualEnergy))
+        self.actualEnergyEdit.setText("{:2.4f}".format(self.actualEnergy))
         self.actualEnergyEdit.setFont(displayFont)
-        self.actualEnergyEdit.setFixedSize(80, 25)
+        self.actualEnergyEdit.setFixedSize(120, 25)
         self.actualEnergyEdit.setAlignment(Qt.AlignRight)
         self.actualEnergyEdit.setReadOnly(True)
         
@@ -113,25 +102,6 @@ class CellEnergyMeasurementsWindow(QWidget):
         
         # add the layout to the measurement box
         self.energyPlotGroupBox.setLayout(self.energyPlotVBox)
-        
-    def handleMeasurements(self):
-        if (self.OnOffControlValueMeasurements == 1):
-            # request energy measurements from the energy sensor and update the display
-            try:
-                measuredEnergy = self.msgIF.GetMeasuredValue()
-                print("measuredEnergy =", measuredEnergy )
-                
-                # valid measurement received   --> update plot and displays
-                self.actualEnergy = measuredEnergy
-                self.noValidMeasurements = self.noValidMeasurements + 1
-                if (self.noValidMeasurements > self.maxArraySize):
-                    self.noValidMeasurements = self.maxArraySize
-                self.actualEnergyEdit.setText("{:2.2f}".format(measuredEnergy))
-                self.updateMeasurementsArray(measuredEnergy)
-                self.updatePlot()
-                self.updateMeanEnergy()
-            except TypeError:
-                print("failed to get correct measurements")
           
     def getStyleSheet(self, path):
         f = QFile(path)
@@ -140,13 +110,14 @@ class CellEnergyMeasurementsWindow(QWidget):
         f.close()
         return stylesheet    
 
-    def updatePlot(self,  unitString):
-        print("update plot")
+    def updatePlot(self,  data):
+        print("update energy plot")
+        self.measuredEnergyArray = data
         self.plotCanvas.axes.clear()
         self.plotCanvas.axes.plot(self.measuredEnergyArray)
         self.plotCanvas.axes.grid()
         self.plotCanvas.axes.set_xlabel('discrete time instance')
-        self.plotCanvas.axes.set_ylabel(unitString + 'Energy / Wh')
+        self.plotCanvas.axes.set_ylabel('Cell Energy / Wh')
         # update the plot
         self.plotCanvas.draw()
         
@@ -154,7 +125,7 @@ class CellEnergyMeasurementsWindow(QWidget):
         # calculate the mean Energy value
         self.meanEnergy = np.mean(self.measuredEnergyArray[0:self.noValidMeasurements])
         # update the mean Energy edit
-        self.meanEnergyEdit.setText("{:2.2f}".format(self.meanEnergy))        
+        self.meanEnergyEdit.setText("{:2.4f}".format(self.meanEnergy))        
         
     def updateMeasurementsArray(self, EnergyValue):
         self.measuredEnergyArray[self.arrayIndex] = EnergyValue
@@ -164,6 +135,6 @@ class CellEnergyMeasurementsWindow(QWidget):
     
     def initMeasurementsArray(self):
         self.maxArraySize = 100
-        self.measuredEnergyArray = 25.0*np.ones(self.maxArraySize+1)
+        self.measuredEnergyArray = 0.1*np.ones(self.maxArraySize+1)
         self.arrayIndex = 0
         self.noValidMeasurements = 0

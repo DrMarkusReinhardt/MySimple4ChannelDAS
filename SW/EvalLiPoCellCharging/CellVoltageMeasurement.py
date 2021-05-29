@@ -30,10 +30,6 @@ class CellVoltageMeasurementsWindow(QWidget):
     def __init__(self, titleString):
         QWidget.__init__(self)
         
-        # set the command message interface
-        # self.msgIF = MsgInterface()
-                                
-        
         # measured values of voltage (actual and mean)
         self.actualVoltage = 0.0
         self.meanVoltage = 0.0
@@ -44,17 +40,10 @@ class CellVoltageMeasurementsWindow(QWidget):
         
         # create the plot widget
         self.createPlotWidget(titleString)
-        print("plot widget created")
-        self.updatePlot(titleString)
-        
-        # Start the measurement thread
-        # periodSec = 5.0
-        # measurementSlot = self.handleMeasurements;
-        # measurementsThreadObj = MeasurementsThread(measurementSlot,periodSec)
-        # measurementsThreadObj.start()
-        
+        print("Voltage plot widget created")
+        self.updatePlot(self.measuredVoltageArray)
 
-    def createPlotWidget(self,  channelString):
+    def createPlotWidget(self,  titleString):
         self.voltagePlotGroupBox = QGroupBox(self.tr(''))
         self.voltagePlotGroupBox.setStyleSheet(self.getStyleSheet("./styles_lightgrey.qss")) 
         titleFont = QFont()
@@ -66,7 +55,7 @@ class CellVoltageMeasurementsWindow(QWidget):
         self.plotCanvas =  MplCanvas(self, width=7, height=3, dpi=100)
         self.plotCanvas.axes.plot(self.measuredVoltageArray)
         self.plotCanvas.axes.set_xlabel('discrete time instance')
-        self.plotCanvas.axes.set_ylabel(channelString + 'voltage / V')
+        self.plotCanvas.axes.set_ylabel('Cell Voltage / V')
         self.plotCanvas.axes.grid()
         self.plotCanvas.setFixedSize(700, 370)
         
@@ -113,26 +102,7 @@ class CellVoltageMeasurementsWindow(QWidget):
         
         # add the layout to the measurement box
         self.voltagePlotGroupBox.setLayout(self.voltagePlotVBox)
-        
-    def handleMeasurements(self):
-        if (self.OnOffControlValueMeasurements == 1):
-            # request voltage measurements from the voltage sensor and update the display
-            try:
-                measuredVoltage = self.msgIF.GetMeasuredValue()
-                print("measuredVoltage =", measuredVoltage )
-                
-                # valid measurement received   --> update plot and displays
-                self.actualVoltage = measuredVoltage
-                self.noValidMeasurements = self.noValidMeasurements + 1
-                if (self.noValidMeasurements > self.maxArraySize):
-                    self.noValidMeasurements = self.maxArraySize
-                self.actualVoltageEdit.setText("{:2.2f}".format(measuredVoltage))
-                self.updateMeasurementsArray(measuredVoltage)
-                self.updatePlot()
-                self.updateMeanVoltage()
-            except TypeError:
-                print("failed to get correct measurements")
-          
+
     def getStyleSheet(self, path):
         f = QFile(path)
         f.open(QFile.ReadOnly | QFile.Text)
@@ -140,13 +110,14 @@ class CellVoltageMeasurementsWindow(QWidget):
         f.close()
         return stylesheet    
 
-    def updatePlot(self,  channelString):
-        print("update plot")
+    def updatePlot(self,  data):
+        print("update voltage plot")
+        self.measuredVoltageArray = data
         self.plotCanvas.axes.clear()
         self.plotCanvas.axes.plot(self.measuredVoltageArray)
         self.plotCanvas.axes.grid()
         self.plotCanvas.axes.set_xlabel('discrete time instance')
-        self.plotCanvas.axes.set_ylabel(channelString + 'Voltage / V')
+        self.plotCanvas.axes.set_ylabel('Cell Voltage / V')
         # update the plot
         self.plotCanvas.draw()
         
@@ -164,6 +135,6 @@ class CellVoltageMeasurementsWindow(QWidget):
     
     def initMeasurementsArray(self):
         self.maxArraySize = 100
-        self.measuredVoltageArray = 25.0*np.ones(self.maxArraySize+1)
+        self.measuredVoltageArray = 4.0*np.ones(self.maxArraySize+1)
         self.arrayIndex = 0
         self.noValidMeasurements = 0

@@ -30,10 +30,6 @@ class CellCapacityMeasurementsWindow(QWidget):
     def __init__(self, titleString):
         QWidget.__init__(self)
         
-        # set the command message interface
-        # self.msgIF = MsgInterface()
-                                
-        
         # measured values of capacity (actual and mean)
         self.actualCapacity = 0.0
         self.meanCapacity = 0.0
@@ -44,15 +40,8 @@ class CellCapacityMeasurementsWindow(QWidget):
         
         # create the plot widget
         self.createPlotWidget(titleString)
-        print("plot widget created")
-        self.updatePlot(titleString)
-        
-        # Start the measurement thread
-        # periodSec = 5.0
-        # measurementSlot = self.handleMeasurements;
-        # measurementsThreadObj = MeasurementsThread(measurementSlot,periodSec)
-        # measurementsThreadObj.start()
-        
+        print("Capacity plot widget created")
+        self.updatePlot(self.measuredCapacityArray)
 
     def createPlotWidget(self,  channelString):
         self.capacityPlotGroupBox = QGroupBox(self.tr(''))
@@ -66,7 +55,7 @@ class CellCapacityMeasurementsWindow(QWidget):
         self.plotCanvas =  MplCanvas(self, width=7, height=3, dpi=100)
         self.plotCanvas.axes.plot(self.measuredCapacityArray)
         self.plotCanvas.axes.set_xlabel('discrete time instance')
-        self.plotCanvas.axes.set_ylabel(channelString + 'capacity / Ah')
+        self.plotCanvas.axes.set_ylabel('Cell Capacity / Ah')
         self.plotCanvas.axes.grid()
         self.plotCanvas.setFixedSize(700, 370)
         
@@ -96,9 +85,9 @@ class CellCapacityMeasurementsWindow(QWidget):
 
         # mean Capacity display edit
         self.actualCapacityEdit = QLineEdit()
-        self.actualCapacityEdit.setText("{:2.2f}".format(self.actualCapacity))
+        self.actualCapacityEdit.setText("{:2.4f}".format(self.actualCapacity))
         self.actualCapacityEdit.setFont(displayFont)
-        self.actualCapacityEdit.setFixedSize(80, 25)
+        self.actualCapacityEdit.setFixedSize(120, 25)
         self.actualCapacityEdit.setAlignment(Qt.AlignRight)
         self.actualCapacityEdit.setReadOnly(True)
         
@@ -113,25 +102,6 @@ class CellCapacityMeasurementsWindow(QWidget):
         
         # add the layout to the measurement box
         self.capacityPlotGroupBox.setLayout(self.capacityPlotVBox)
-        
-    def handleMeasurements(self):
-        if (self.OnOffControlValueMeasurements == 1):
-            # request capacity measurements from the capacity sensor and update the display
-            try:
-                measuredCapacity = self.msgIF.GetMeasuredValue()
-                print("measuredCapacity =", measuredCapacity )
-                
-                # valid measurement received   --> update plot and displays
-                self.actualCapacity = measuredCapacity
-                self.noValidMeasurements = self.noValidMeasurements + 1
-                if (self.noValidMeasurements > self.maxArraySize):
-                    self.noValidMeasurements = self.maxArraySize
-                self.actualCapacityEdit.setText("{:2.2f}".format(measuredCapacity))
-                self.updateMeasurementsArray(measuredCapacity)
-                self.updatePlot()
-                self.updateMeanCapacity()
-            except TypeError:
-                print("failed to get correct measurements")
           
     def getStyleSheet(self, path):
         f = QFile(path)
@@ -140,13 +110,14 @@ class CellCapacityMeasurementsWindow(QWidget):
         f.close()
         return stylesheet    
 
-    def updatePlot(self,  channelString):
-        print("update plot")
+    def updatePlot(self,  data):
+        print("update capacity plot")
+        self.measuredCapacityArray = data
         self.plotCanvas.axes.clear()
         self.plotCanvas.axes.plot(self.measuredCapacityArray)
         self.plotCanvas.axes.grid()
         self.plotCanvas.axes.set_xlabel('discrete time instance')
-        self.plotCanvas.axes.set_ylabel(channelString + 'Capacity / Ah')
+        self.plotCanvas.axes.set_ylabel('Cell Capacity / Ah')
         # update the plot
         self.plotCanvas.draw()
         
@@ -154,7 +125,7 @@ class CellCapacityMeasurementsWindow(QWidget):
         # calculate the mean Capacity value
         self.meanCapacity = np.mean(self.measuredCapacityArray[0:self.noValidMeasurements])
         # update the mean Capacity edit
-        self.meanCapacityEdit.setText("{:2.2f}".format(self.meanCapacity))        
+        self.meanCapacityEdit.setText("{:2.4f}".format(self.meanCapacity))        
         
     def updateMeasurementsArray(self, CapacityValue):
         self.measuredCapacityArray[self.arrayIndex] = CapacityValue
@@ -164,6 +135,6 @@ class CellCapacityMeasurementsWindow(QWidget):
     
     def initMeasurementsArray(self):
         self.maxArraySize = 100
-        self.measuredCapacityArray = 25.0*np.ones(self.maxArraySize+1)
+        self.measuredCapacityArray = 0.1*np.ones(self.maxArraySize+1)
         self.arrayIndex = 0
         self.noValidMeasurements = 0

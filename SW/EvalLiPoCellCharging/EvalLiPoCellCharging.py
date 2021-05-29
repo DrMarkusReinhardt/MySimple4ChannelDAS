@@ -18,10 +18,10 @@ import sys
 # import ntpath
 # import os
 import random
-
+import numpy as np
 from PyQt5.Qt import *
 from PyQt5.QtCore import *
-# from MeasurementsThread import *
+from RandomMeasurementsThread import *
 from CellVoltageMeasurement import CellVoltageMeasurementsWindow
 from CellCurrentMeasurement import CellCurrentMeasurementsWindow
 from CellCapacityMeasurement import CellCapacityMeasurementsWindow
@@ -38,7 +38,7 @@ class MainWindow(QMainWindow):
         QMainWindow.__init__(self)
 
         # set the command message interface
-        #self.msgIF = MsgInterface()
+        self.msgIF = MsgInterface()
         
         # create frame
         frame = QFrame()
@@ -46,10 +46,10 @@ class MainWindow(QMainWindow):
         frameLayout = QGridLayout(frame)
         
         # create a cell voltage display, a cell current display and a cell capacity display
-        voltageMeasurementDisplay = CellVoltageMeasurementsWindow("Cell voltage: ")
-        currentMeasurementDisplay = CellCurrentMeasurementsWindow("Cell current: ")
-        capacityMeasurementDisplay = CellCapacityMeasurementsWindow("Cell capacity: ")
-        energyMeasurementDisplay = CellEnergyMeasurementsWindow("Cell energy: ")
+        self.voltageMeasurementDisplay = CellVoltageMeasurementsWindow("Cell voltage")
+        self.currentMeasurementDisplay = CellCurrentMeasurementsWindow("Cell current")
+        self.capacityMeasurementDisplay = CellCapacityMeasurementsWindow("Cell capacity")
+        self.energyMeasurementDisplay = CellEnergyMeasurementsWindow("Cell energy")
 
         # the on/off control
         # on / off control values for the measurements
@@ -66,10 +66,10 @@ class MainWindow(QMainWindow):
         self.createManufacturerLabel()
         
         # create the main (top level) layout
-        frameLayout.addWidget(voltageMeasurementDisplay.voltagePlotGroupBox,0,0,1,3)
-        frameLayout.addWidget(currentMeasurementDisplay.currentPlotGroupBox,0,3,1,3)
-        frameLayout.addWidget(capacityMeasurementDisplay.capacityPlotGroupBox,1,0,1,3)
-        frameLayout.addWidget(energyMeasurementDisplay.energyPlotGroupBox, 1, 3, 1, 3)
+        frameLayout.addWidget(self.voltageMeasurementDisplay.voltagePlotGroupBox,0,0,1,3)
+        frameLayout.addWidget(self.currentMeasurementDisplay.currentPlotGroupBox,0,3,1,3)
+        frameLayout.addWidget(self.capacityMeasurementDisplay.capacityPlotGroupBox,1,0,1,3)
+        frameLayout.addWidget(self.energyMeasurementDisplay.energyPlotGroupBox, 1, 3, 1, 3)
         frameLayout.addWidget(self.onOffCtrlGroupboxMeasurements,2,0)
         frameLayout.addWidget(self.configFileGroupBox,2,1)
         frameLayout.addWidget(self.statusGroupBox,2,2,1,3)
@@ -80,12 +80,19 @@ class MainWindow(QMainWindow):
 
         # set window title
         self.setWindowTitle(self.tr("LiPo Cell Measurements"))
+
+        # arrays of measurements
+        self.initVoltageMeasurementsArray()
+        self.initCurrentMeasurementsArray()
+        self.initCapacityMeasurementsArray()
+        self.initEnergyMeasurementsArray()
+        self.chargingTime = 0.0
         
         # Start the measurement thread
-        # periodSec = 2.0
-        #measurementSlot = self.handleMeasurements;
-        #measurementsThreadObj = MeasurementsThread(measurementSlot,periodSec)
-        #measurementsThreadObj.start()
+        self.periodSec = 2.0
+        measurementSlot = self.handleMeasurements;
+        measurementsThreadObj = RandomMeasurementsThread(measurementSlot,self.periodSec)
+        measurementsThreadObj.start()
         
     def createManufacturerLabel(self):
         self.manufacturerGroupbox = QGroupBox(self.tr("Made by"))
@@ -233,25 +240,108 @@ class MainWindow(QMainWindow):
         f.open(QFile.ReadOnly | QFile.Text)
         stylesheet = QTextStream(f).readAll()
         f.close()
-        return stylesheet 
+        return stylesheet
 
+    def initVoltageMeasurementsArray(self):
+        self.maxVoltageArraySize = 100
+        self.measuredVoltageArray = 4.0*np.ones(self.maxVoltageArraySize+1)
+        self.voltageArrayIndex = 0
+        self.noValidVoltageMeasurements = 0
+
+    def updateVoltageMeasurementsArray(self, measuredVoltageValue):
+        self.measuredVoltageArray[self.voltageArrayIndex] = measuredVoltageValue
+        self.voltageArrayIndex = self.voltageArrayIndex + 1
+        if (self.voltageArrayIndex > self.maxVoltageArraySize) :
+            self.voltageArrayIndex = 0
+    
+    def initCurrentMeasurementsArray(self):
+        self.maxCurrentArraySize = 100
+        self.measuredCurrentArray = 0.9*np.ones(self.maxCurrentArraySize+1)
+        self.currentArrayIndex = 0
+        self.noValidCurrentMeasurements = 0
+
+    def updateCurrentMeasurementsArray(self, measuredCurrentValue):
+        self.measuredCurrentArray[self.currentArrayIndex] = measuredCurrentValue
+        self.currentArrayIndex = self.currentArrayIndex + 1
+        if (self.currentArrayIndex > self.maxCurrentArraySize) :
+            self.currentArrayIndex = 0
+            
+    def initCapacityMeasurementsArray(self):
+        self.maxCapacityArraySize = 100
+        self.measuredCapacityArray = 0.9*np.ones(self.maxCapacityArraySize+1)
+        self.capacityArrayIndex = 0
+        self.noValidCapacityMeasurements = 0
+        
+    def updateCapacityMeasurementsArray(self, measuredCapacityValue):
+        self.measuredCapacityArray[self.capacityArrayIndex] = measuredCapacityValue
+        self.capacityArrayIndex = self.capacityArrayIndex + 1
+        if (self.capacityArrayIndex > self.maxCapacityArraySize) :
+            self.capacityArrayIndex = 0
+
+    def initEnergyMeasurementsArray(self):
+        self.maxEnergyArraySize = 100
+        self.measuredEnergyArray = 0.9*np.ones(self.maxEnergyArraySize+1)
+        self.energyArrayIndex = 0
+        self.noValidEnergyMeasurements = 0
+
+    def updateEnergyMeasurementsArray(self, measuredEnergyValue):
+        self.measuredEnergyArray[self.energyArrayIndex] = measuredEnergyValue
+        self.energyArrayIndex = self.energyArrayIndex + 1
+        if (self.energyArrayIndex > self.maxEnergyArraySize) :
+            self.energyArrayIndex = 0
+
+    def updatePlots(self):
+        self.voltageMeasurementDisplay.updatePlot(self.measuredVoltageArray)
+        self.currentMeasurementDisplay.updatePlot(self.measuredCurrentArray)
+        self.capacityMeasurementDisplay.updatePlot(self.measuredCapacityArray)
+        self.energyMeasurementDisplay.updatePlot(self.measuredEnergyArray)
+        
     def handleMeasurements(self):
         if (self.OnOffControlValueMeasurements == 1):
             # request voltage measurements from the voltage sensor and update the display
             try:
-                #measuredVoltages = self.msgIF.GetMeasuredValues()
-                measuredVoltage = 4.1 + 0.1*random.random()
-                print("measuredVoltage =", measuredVoltage)
+                # process the voltage measurement
+                measuredVoltage = self.msgIF.GetMeasuredVoltageValue()
+                print("measured voltage =", measuredVoltage)
+                # valid measurement received   --> update data array
+                self.actualVoltage = measuredVoltage
+                self.noValidVoltageMeasurements = self.noValidVoltageMeasurements + 1
+                if (self.noValidVoltageMeasurements > self.maxVoltageArraySize):
+                    self.noValidVoltageMeasurements = self.maxVoltageArraySize
+                self.voltageMeasurementDisplay.actualVoltageEdit.setText("{:2.2f}".format(measuredVoltage))
+                self.updateVoltageMeasurementsArray(measuredVoltage)
+
+                # process the current measurement
+                measuredCurrent = self.msgIF.GetMeasuredCurrentValue()
+                print("measured current =", measuredCurrent)
+                # valid measurement received   --> update data array
+                self.actualCurrent = measuredCurrent
+                self.noValidCurrentMeasurements = self.noValidCurrentMeasurements + 1
+                if (self.noValidCurrentMeasurements > self.maxCurrentArraySize):
+                    self.noValidCurrentMeasurements = self.maxCurrentArraySize
+                self.currentMeasurementDisplay.actualCurrentEdit.setText("{:2.3f}".format(measuredCurrent))
+                self.updateCurrentMeasurementsArray(measuredCurrent)
                 
-                # valid measurement received   --> update plot and displays
-                self.actualVoltages = measuredVoltage
-                self.noValidMeasurements = self.noValidMeasurements + 1
-                if (self.noValidMeasurements > self.maxArraySize):
-                    self.noValidMeasurements = self.maxArraySize
-                self.actualVoltageEdit.setText("{:2.2f}".format(measuredVoltage))
-                self.updateMeasurementsArray(measuredVoltage)
-                self.updatePlot()
-                self.updateMeanVoltage()
+                # calculate the actual capacity  value
+                self.chargingTime = self.chargingTime + self.periodSec
+                self.actualCapacity = measuredCurrent * self.chargingTime / 3600.0
+                self.noValidCapacityMeasurements = self.noValidCapacityMeasurements + 1
+                if (self.noValidCapacityMeasurements > self.maxCapacityArraySize):
+                    self.noValidCapacityMeasurements = self.maxCapacityArraySize
+                self.capacityMeasurementDisplay.actualCapacityEdit.setText("{:2.4f}".format(self.actualCapacity))
+                self.updateCapacityMeasurementsArray(self.actualCapacity)
+                
+                # calculate the actual energy value
+                self.actualEnergy = measuredCurrent * measuredVoltage * self.chargingTime / 3600.0
+                self.noValidEnergyMeasurements = self.noValidEnergyMeasurements + 1
+                if (self.noValidEnergyMeasurements > self.maxEnergyArraySize):
+                    self.noValidEnergyMeasurements = self.maxEnergyArraySize
+                self.energyMeasurementDisplay.actualEnergyEdit.setText("{:2.4f}".format(self.actualEnergy))
+                self.updateEnergyMeasurementsArray(self.actualEnergy)
+                
+                # update all plots
+                self.updatePlots()
+
             except TypeError:
                 print("failed to get correct measurements")
 

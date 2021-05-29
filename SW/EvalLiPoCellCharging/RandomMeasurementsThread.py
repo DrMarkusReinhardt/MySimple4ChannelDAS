@@ -14,6 +14,7 @@ Last change on Created 30th March 2021
 from __future__ import print_function
 # import os
 # import time
+import random
 from PyQt5.Qt import *
 from PyQt5.QtCore import *
    
@@ -40,7 +41,22 @@ class MsgInterface(object):
     def __init__(self):
         self.running = False
     
-    def GetMeasuredValue(self):
+    def GetMeasuredVoltageValue(self):
         # print("GetMeasuredValues")
-        measuredValue = 1.0;
+        measuredValue = 4.1 + 0.1*random.random()
+        return measuredValue;
+
+    def GetMeasuredCurrentValue(self):
+        # print("GetMeasuredValues")
+        measuredValue = 0.9 + 0.1*random.random()
+        return measuredValue;
+        
+    def GetMeasuredCapacityValue(self):
+        # print("GetMeasuredValues")
+        measuredValue = 3.8 + 0.1*random.random()
+        return measuredValue;
+        
+    def GetMeasuredEnergyValue(self):
+        # print("GetMeasuredValues")
+        measuredValue = 2.5+ 0.1*random.random()
         return measuredValue;

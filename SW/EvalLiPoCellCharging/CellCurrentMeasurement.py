@@ -30,10 +30,6 @@ class CellCurrentMeasurementsWindow(QWidget):
     def __init__(self, titleString):
         QWidget.__init__(self)
         
-        # set the command message interface
-        # self.msgIF = MsgInterface()
-                                
-        
         # measured values of current (actual and mean)
         self.actualCurrent = 0.0
         self.meanCurrent = 0.0
@@ -44,17 +40,11 @@ class CellCurrentMeasurementsWindow(QWidget):
         
         # create the plot widget
         self.createPlotWidget(titleString)
-        print("plot widget created")
-        self.updatePlot(titleString)
-        
-        # Start the measurement thread
-        # periodSec = 5.0
-        # measurementSlot = self.handleMeasurements;
-        # measurementsThreadObj = MeasurementsThread(measurementSlot,periodSec)
-        # measurementsThreadObj.start()
-        
+        print("Current plot widget created")
+        self.updatePlot(self.measuredCurrentArray)
+                
 
-    def createPlotWidget(self,  channelString):
+    def createPlotWidget(self,  titleString):
         self.currentPlotGroupBox = QGroupBox(self.tr(''))
         self.currentPlotGroupBox.setStyleSheet(self.getStyleSheet("./styles_lightgrey.qss")) 
         titleFont = QFont()
@@ -66,7 +56,7 @@ class CellCurrentMeasurementsWindow(QWidget):
         self.plotCanvas =  MplCanvas(self, width=7, height=3, dpi=100)
         self.plotCanvas.axes.plot(self.measuredCurrentArray)
         self.plotCanvas.axes.set_xlabel('discrete time instance')
-        self.plotCanvas.axes.set_ylabel(channelString + 'current / A')
+        self.plotCanvas.axes.set_ylabel('Cell Current / A')
         self.plotCanvas.axes.grid()
         self.plotCanvas.setFixedSize(700, 370)
         
@@ -96,7 +86,7 @@ class CellCurrentMeasurementsWindow(QWidget):
 
         # mean Current display edit
         self.actualCurrentEdit = QLineEdit()
-        self.actualCurrentEdit.setText("{:2.2f}".format(self.actualCurrent))
+        self.actualCurrentEdit.setText("{:2.3f}".format(self.actualCurrent))
         self.actualCurrentEdit.setFont(displayFont)
         self.actualCurrentEdit.setFixedSize(80, 25)
         self.actualCurrentEdit.setAlignment(Qt.AlignRight)
@@ -113,25 +103,6 @@ class CellCurrentMeasurementsWindow(QWidget):
         
         # add the layout to the measurement box
         self.currentPlotGroupBox.setLayout(self.currentPlotVBox)
-        
-    def handleMeasurements(self):
-        if (self.OnOffControlValueMeasurements == 1):
-            # request current measurements from the current sensor and update the display
-            try:
-                measuredCurrent = self.msgIF.GetMeasuredValue()
-                print("measuredCurrent =", measuredCurrent )
-                
-                # valid measurement received   --> update plot and displays
-                self.actualCurrent = measuredCurrent
-                self.noValidMeasurements = self.noValidMeasurements + 1
-                if (self.noValidMeasurements > self.maxArraySize):
-                    self.noValidMeasurements = self.maxArraySize
-                self.actualCurrentEdit.setText("{:2.2f}".format(measuredCurrent))
-                self.updateMeasurementsArray(measuredCurrent)
-                self.updatePlot()
-                self.updateMeanCurrent()
-            except TypeError:
-                print("failed to get correct measurements")
           
     def getStyleSheet(self, path):
         f = QFile(path)
@@ -140,13 +111,14 @@ class CellCurrentMeasurementsWindow(QWidget):
         f.close()
         return stylesheet    
 
-    def updatePlot(self,  channelString):
-        print("update plot")
+    def updatePlot(self,  data):
+        print("update current plot")
+        self.measuredCurrentArray = data
         self.plotCanvas.axes.clear()
         self.plotCanvas.axes.plot(self.measuredCurrentArray)
         self.plotCanvas.axes.grid()
         self.plotCanvas.axes.set_xlabel('discrete time instance')
-        self.plotCanvas.axes.set_ylabel(channelString + 'Current / A')
+        self.plotCanvas.axes.set_ylabel('Cell Current / A')
         # update the plot
         self.plotCanvas.draw()
         
@@ -154,7 +126,7 @@ class CellCurrentMeasurementsWindow(QWidget):
         # calculate the mean Current value
         self.meanCurrent = np.mean(self.measuredCurrentArray[0:self.noValidMeasurements])
         # update the mean Current edit
-        self.meanCurrentEdit.setText("{:2.2f}".format(self.meanCurrent))        
+        self.meanCurrentEdit.setText("{:2.3f}".format(self.meanCurrent))        
         
     def updateMeasurementsArray(self, CurrentValue):
         self.measuredCurrentArray[self.arrayIndex] = CurrentValue
@@ -164,6 +136,6 @@ class CellCurrentMeasurementsWindow(QWidget):
     
     def initMeasurementsArray(self):
         self.maxArraySize = 100
-        self.measuredCurrentArray = 25.0*np.ones(self.maxArraySize+1)
+        self.measuredCurrentArray = 0.9*np.ones(self.maxArraySize+1)
         self.arrayIndex = 0
         self.noValidMeasurements = 0
