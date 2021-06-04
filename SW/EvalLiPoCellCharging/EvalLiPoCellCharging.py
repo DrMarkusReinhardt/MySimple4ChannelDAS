@@ -3,7 +3,7 @@
 """
 Project MySimple4ChannelDAS
 
-PC program to evaluate 2-channel cell voltage and cell current measurements from an charging LiPo cell
+PC program to evaluate cell voltage and cell current measurements from a charging LiPo cell
 (suited for Max OSX, Windows, Linux)
 
 Created 28th May 2021
@@ -17,7 +17,6 @@ from __future__ import print_function
 import sys
 # import ntpath
 # import os
-import random
 import numpy as np
 from PyQt5.Qt import *
 from PyQt5.QtCore import *
@@ -219,7 +218,7 @@ class MainWindow(QMainWindow):
         layout.addWidget(self.statusLabel)
 
         # assign the layout to the group box
-        self.statusGroupBox.setLayout(layout) 
+        self.statusGroupBox.setLayout(layout)
 
     def setOpenFileName(self):
         # selectedFilter = QString()
