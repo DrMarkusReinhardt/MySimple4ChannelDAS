@@ -1,5 +1,3 @@
-#!/usr/local/bin/python3
-# -*- coding:utf-8 -*-
 """
 Measurements thread to evaluate temperature measurements from a sensor connected to an Arduino board
 (suited for Max OSX, Windows, Linux)
@@ -27,7 +25,6 @@ class MeasurementsThread(QThread):
         self.periodSec = periodSec
 
     def run(self):
-        print("run")
         activateMeasurementTimer(self.measurementHandler,self.periodSec)
         self.exec_()
 
@@ -84,6 +81,7 @@ class MsgInterface(object):
             self.arduino = PyCmdMessenger.ArduinoBoard(self.port_name,baud_rate=9600)
             # Initialize the messenger
             self.messenger  = PyCmdMessenger.CmdMessenger(self.arduino,self.commands)
+            self.loopCounter = 0
             
     def printReceiveMsg(self):
         ReceiveMsg = self.messenger.receive()
@@ -114,14 +112,19 @@ class MsgInterface(object):
                 else:
                     if channelIndex == 4:
                         self.messenger.send('sendMeasuredVoltage4')
+                    else:
+                        print("error of channel index")
                     
     def GetMeasuredVoltage(self,  channelIndex):
-        # print("GetMeasuredVoltage1")
+        #print("GetMeasuredVoltage1")
+        #print("channel index =", channelIndex)        
         try:
             if self.sem.available() > 0:
                 self.sem.acquire(1)
                 self.SendVoltageRequestMsg(channelIndex)
-                time.sleep(0.1)
+                time.sleep(0.1)        
+                self.loopCounter = self.loopCounter +1
+                # print("loop counter = ", self.loopCounter)
                 # self.printReceiveMsg()
                 ReceiveMsg = self.messenger.receive()
                 self.sem.release(1)

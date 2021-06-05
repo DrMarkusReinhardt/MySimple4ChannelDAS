@@ -32,7 +32,6 @@ class VoltageMeasurementsWindow(QWidget):
         
         # measured values of voltage (actual and mean)
         self.actualVoltage = 0.0
-        self.meanVoltage = 0.0
         self.noValidMeasurements = 0
         
         # array of measurements
@@ -85,7 +84,7 @@ class VoltageMeasurementsWindow(QWidget):
 
         # mean Voltage display edit
         self.actualVoltageEdit = QLineEdit()
-        self.actualVoltageEdit.setText("{:2.2f}".format(self.actualVoltage))
+        self.actualVoltageEdit.setText("{:2.3f}".format(self.actualVoltage))
         self.actualVoltageEdit.setFont(displayFont)
         self.actualVoltageEdit.setFixedSize(80, 25)
         self.actualVoltageEdit.setAlignment(Qt.AlignRight)
@@ -102,26 +101,7 @@ class VoltageMeasurementsWindow(QWidget):
         
         # add the layout to the measurement box
         self.voltagePlotGroupBox.setLayout(self.voltagePlotVBox)
-        
-    def handleMeasurements(self):
-        if (self.OnOffControlValueMeasurements == 1):
-            # request voltage measurements from the voltage sensor and update the display
-            try:
-                measuredVoltage = self.msgIF.GetMeasuredValue()
-                print("measuredVoltage =", measuredVoltage )
-                
-                # valid measurement received   --> update plot and displays
-                self.actualVoltage = measuredVoltage
-                self.noValidMeasurements = self.noValidMeasurements + 1
-                if (self.noValidMeasurements > self.maxArraySize):
-                    self.noValidMeasurements = self.maxArraySize
-                self.actualVoltageEdit.setText("{:2.2f}".format(measuredVoltage))
-                self.updateMeasurementsArray(measuredVoltage)
-                self.updatePlot()
-                self.updateMeanVoltage()
-            except TypeError:
-                print("failed to get correct measurements")
-          
+
     def getStyleSheet(self, path):
         f = QFile(path)
         f.open(QFile.ReadOnly | QFile.Text)
@@ -138,13 +118,7 @@ class VoltageMeasurementsWindow(QWidget):
         self.plotCanvas.axes.set_ylabel(channelString + 'Voltage / V')
         # update the plot
         self.plotCanvas.draw()
-        
-    def updateMeanVoltage(self):
-        # calculate the mean Voltage value
-        self.meanVoltage = np.mean(self.measuredVoltageArray[0:self.noValidMeasurements])
-        # update the mean Voltage edit
-        self.meanVoltageEdit.setText("{:2.2f}".format(self.meanVoltage))        
-        
+                
     def updateMeasurementsArray(self, VoltageValue):
         self.measuredVoltageArray[self.arrayIndex] = VoltageValue
         self.arrayIndex = self.arrayIndex + 1
