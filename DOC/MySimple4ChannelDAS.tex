@@ -173,9 +173,32 @@ The schematics are shown in figure \ref{fig:Schematics}.
 \end{figure}
 
 \newpage
-\section{Software setup}
+\section{Software}
+\subsection{Arduino Sketch}
+The Arduino sketch is running on an Arduino Uno. It consists of 3 tasks.
+
+The first task is the blinker task that blinks the on-board LED, i.~e. it is working as an alive-signal.
+
+The second task is the communication task that receives request/commands from the PC via the CmdMessenger Library and sends on request the voltage measurements
+back to the PC program. The CmdMessenger interface uses the SoftwareSerial library for the communication via a USB/Serial module to the PC. 
+Arduino digital pins 2 (RX) and 3 (TX) are used by the SoftwareSerial library.
+
+The third task is the measurement task that handles the I2C interface to the ADC module to get the measurement values. The standard I2C pins of the Arduino Uno are used here, i.~e. Pins A4/SDA and A5/SCL). Pin A0 is used for the ADC module's ALERT pin interfacing.
+
+The measured voltages are also printed to the standard Arduino Serial port (/dev/ttyACM0) and can be watched with the Arduino Serial Monitor of the IDE.
+The trace of the measured voltages in the Arduino IDE Serial Monitor after the program setup is done is shown in figure \ref{fig:ArduinoSerialMonitorTrace}.
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.9\linewidth]{Figures/ArduinoSerialMonitorTrace.png}
+	\caption[Arduino Serial Monitor: Trace of four measured voltages]{Arduino Serial Monitor: Trace of the four measured voltages}
+	\label{fig:ArduinoSerialMonitorTrace}
+\end{figure}
+
+
 \subsection{PC Application}
-The GUI of the Python PC application is shown in figure \ref{fig:ApplicationWindow}.
+The GUI of the Python PC application is shown in figure \ref{fig:ApplicationWindow}. The program reads via the PyCmdMessenger library the four measured voltages from the Arduino board
+via the USB/Serial module on port /dev/ttyUSB0 and displays the voltages vs. the discrete sample time index in four separate plots.
+The program also allows to store the measured data and to control the measurements via start/stop/reset commands in the GUI.
 \begin{figure}[htbp]
 	\centering
 	\includegraphics[width=1.0\linewidth]{Figures/ApplicationWindow.png}
