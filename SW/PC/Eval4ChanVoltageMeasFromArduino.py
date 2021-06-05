@@ -37,7 +37,7 @@ class MainWindow(QMainWindow):
         self.msgIF = MsgInterface()
 
         # Start the measurement thread
-        periodSec = 2.0
+        periodSec = 5.0
         measurementSlot = self.handleMeasurements;
         measurementsThreadObj = MeasurementsThread(measurementSlot,periodSec)
         measurementsThreadObj.start()
@@ -236,14 +236,13 @@ class MainWindow(QMainWindow):
         if (self.OnOffControlValueMeasurements == 1):
             # request voltage measurements from the voltage sensor and update the display
             try:
-                """
                 # channel 1
                 measuredVoltage1 = self.msgIF.GetMeasuredVoltage(1)
                 print("measuredVoltage1 =", measuredVoltage1)
                 self.voltageMeasurementDisplay1.actualVoltageEdit.setText("{:2.3f}".format(measuredVoltage1))
                 self.voltageMeasurementDisplay1.updateMeasurementsArray(measuredVoltage1)
                 self.voltageMeasurementDisplay1.updatePlot("Channel1: ")
-
+                
                 # channel 2
                 measuredVoltage2 = self.msgIF.GetMeasuredVoltage(2)
                 print("measuredVoltage2 =", measuredVoltage2)
@@ -251,7 +250,6 @@ class MainWindow(QMainWindow):
                 self.voltageMeasurementDisplay2.updateMeasurementsArray(measuredVoltage2)
                 self.voltageMeasurementDisplay2.updatePlot("Channel2: ")
                 
-                """
                 # channel 3
                 measuredVoltage3 = self.msgIF.GetMeasuredVoltage(3)
                 print("measuredVoltage3 =", measuredVoltage3)
@@ -265,7 +263,6 @@ class MainWindow(QMainWindow):
                 self.voltageMeasurementDisplay4.actualVoltageEdit.setText("{:2.3f}".format(measuredVoltage4))
                 self.voltageMeasurementDisplay4.updateMeasurementsArray(measuredVoltage4)
                 self.voltageMeasurementDisplay4.updatePlot("Channel4: ")
-                # time.sleep(1.0)
 
             except TypeError:
                 print("failed to get correct measurements")
