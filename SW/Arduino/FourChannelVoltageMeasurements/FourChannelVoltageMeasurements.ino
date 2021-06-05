@@ -30,7 +30,7 @@ void setup()
 
   // start the debug serial port
   SWSerial.begin(9600);
-  SWSerial.println(F("SWSerial setup done"));
+  // SWSerial.println(F("SWSerial setup done"));
 
   // setup the measurements task
   measurements.setup();

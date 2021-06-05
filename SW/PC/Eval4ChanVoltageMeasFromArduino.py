@@ -34,17 +34,26 @@ class MainWindow(QMainWindow):
 
         # set the command message interface
         self.msgIF = MsgInterface()
+
+        # reset counter for valid measurements
+        self.noValidMeasurements = 0
         
+        # Start the measurement thread
+        periodSec = 2.0
+        measurementSlot = self.handleMeasurements;
+        measurementsThreadObj = MeasurementsThread(measurementSlot,periodSec)
+        measurementsThreadObj.start()
+
         # create frame
         frame = QFrame()
         frame.setStyleSheet("QFrame { background-color: white }")
         frameLayout = QGridLayout(frame)
-        
+
         # create four voltage displays
-        voltageMeasurementDisplay1 = VoltageMeasurementsWindow("Channel1: ")
-        voltageMeasurementDisplay2 = VoltageMeasurementsWindow("Channel2: ")
-        voltageMeasurementDisplay3 = VoltageMeasurementsWindow("Channel3: ")
-        voltageMeasurementDisplay4 = VoltageMeasurementsWindow("Channel4: ")
+        self.voltageMeasurementDisplay1 = VoltageMeasurementsWindow("Channel1: ")
+        self.voltageMeasurementDisplay2 = VoltageMeasurementsWindow("Channel2: ")
+        self.voltageMeasurementDisplay3 = VoltageMeasurementsWindow("Channel3: ")
+        self.voltageMeasurementDisplay4 = VoltageMeasurementsWindow("Channel4: ")
 
         # the on/off control
         # on / off control values for the measurements
@@ -61,10 +70,10 @@ class MainWindow(QMainWindow):
         self.createManufacturerLabel()
         
         # create the main (top level) layout
-        frameLayout.addWidget(voltageMeasurementDisplay1.voltagePlotGroupBox,0,0,1,3)
-        frameLayout.addWidget(voltageMeasurementDisplay2.voltagePlotGroupBox,0,3,1,3)
-        frameLayout.addWidget(voltageMeasurementDisplay3.voltagePlotGroupBox,1,0,1,3)
-        frameLayout.addWidget(voltageMeasurementDisplay4.voltagePlotGroupBox,1,3,1,3)
+        frameLayout.addWidget(self.voltageMeasurementDisplay1.voltagePlotGroupBox,0,0,1,3)
+        frameLayout.addWidget(self.voltageMeasurementDisplay2.voltagePlotGroupBox,0,3,1,3)
+        frameLayout.addWidget(self.voltageMeasurementDisplay3.voltagePlotGroupBox,1,0,1,3)
+        frameLayout.addWidget(self.voltageMeasurementDisplay4.voltagePlotGroupBox,1,3,1,3)
         frameLayout.addWidget(self.onOffCtrlGroupboxMeasurements,2,0)
         frameLayout.addWidget(self.configFileGroupBox,2,1)
         frameLayout.addWidget(self.statusGroupBox,2,2,1,3)
@@ -75,12 +84,6 @@ class MainWindow(QMainWindow):
 
         # set window title
         self.setWindowTitle(self.tr("4-Channel Voltage Measurements"))
-        
-        # Start the measurement thread
-        periodSec = 2.0
-        measurementSlot = self.handleMeasurements;
-        measurementsThreadObj = MeasurementsThread(measurementSlot,periodSec)
-        measurementsThreadObj.start()
         
     def createManufacturerLabel(self):
         self.manufacturerGroupbox = QGroupBox(self.tr("Made by"))
@@ -231,21 +234,38 @@ class MainWindow(QMainWindow):
         return stylesheet 
 
     def handleMeasurements(self):
+        # print("handleMeasurements")
         if (self.OnOffControlValueMeasurements == 1):
             # request voltage measurements from the voltage sensor and update the display
             try:
-                measuredVoltages = self.msgIF.GetMeasuredValues()
-                print("measuredVoltages =", measuredVoltages )
+                # channel 1
+                measuredVoltage1 = self.msgIF.GetMeasuredVoltage(1)
+                print("measuredVoltage1 =", measuredVoltage1)
+                self.voltageMeasurementDisplay1.actualVoltageEdit.setText("{:2.2f}".format(measuredVoltage1))
+                self.voltageMeasurementDisplay1.updateMeasurementsArray(measuredVoltage1)
+                self.voltageMeasurementDisplay1.updatePlot("Channel1: ")
                 
-                # valid measurement received   --> update plot and displays
-                self.actualVoltages = measuredVoltages
-                self.noValidMeasurements = self.noValidMeasurements + 1
-                if (self.noValidMeasurements > self.maxArraySize):
-                    self.noValidMeasurements = self.maxArraySize
-                self.actualVoltageEdit.setText("{:2.2f}".format(measuredVoltages))
-                self.updateMeasurementsArray(measuredVoltages)
-                self.updatePlot()
-                self.updateMeanVoltage()
+                # channel 2
+                measuredVoltage2 = self.msgIF.GetMeasuredVoltage(2)
+                print("measuredVoltage2 =", measuredVoltage2)
+                self.voltageMeasurementDisplay2.actualVoltageEdit.setText("{:2.2f}".format(measuredVoltage2))
+                self.voltageMeasurementDisplay2.updateMeasurementsArray(measuredVoltage2)
+                self.voltageMeasurementDisplay2.updatePlot("Channel2: ")
+
+                # channel 3
+                measuredVoltage3 = self.msgIF.GetMeasuredVoltage(3)
+                print("measuredVoltage3 =", measuredVoltage3)
+                self.voltageMeasurementDisplay3.actualVoltageEdit.setText("{:2.2f}".format(measuredVoltage3))
+                self.voltageMeasurementDisplay3.updateMeasurementsArray(measuredVoltage3)
+                self.voltageMeasurementDisplay3.updatePlot("Channel3: ")
+
+                # channel 4
+                measuredVoltage4 = self.msgIF.GetMeasuredVoltage(4)
+                print("measuredVoltage4 =", measuredVoltage4)
+                self.voltageMeasurementDisplay4.actualVoltageEdit.setText("{:2.2f}".format(measuredVoltage4))
+                self.voltageMeasurementDisplay4.updateMeasurementsArray(measuredVoltage4)
+                self.voltageMeasurementDisplay4.updatePlot("Channel4: ")
+
             except TypeError:
                 print("failed to get correct measurements")
 

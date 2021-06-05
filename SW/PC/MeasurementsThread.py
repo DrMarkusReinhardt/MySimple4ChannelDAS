@@ -27,6 +27,7 @@ class MeasurementsThread(QThread):
         self.periodSec = periodSec
 
     def run(self):
+        print("run")
         activateMeasurementTimer(self.measurementHandler,self.periodSec)
         self.exec_()
 
@@ -100,24 +101,39 @@ class MsgInterface(object):
         """Callback function to handle errors
         """
         print(('Error:', args[0][0]))
-       
-    def GetMeasuredValues(self):
-        # print("GetMeasuredValues")
+
+    def SendVoltageRequestMsg(self,  channelIndex):
+        if channelIndex == 1:
+            self.messenger.send('sendMeasuredVoltage1')
+        else:
+            if channelIndex == 2:
+                self.messenger.send('sendMeasuredVoltage2')
+            else:
+                if channelIndex == 3:
+                    self.messenger.send('sendMeasuredVoltage3')
+                else:
+                    if channelIndex == 4:
+                        self.messenger.send('sendMeasuredVoltage4')
+                    
+    def GetMeasuredVoltage(self,  channelIndex):
+        # print("GetMeasuredVoltage1")
         try:
             if self.sem.available() > 0:
                 self.sem.acquire(1)
-                self.messenger.send('sendMeasuredValues')
+                self.SendVoltageRequestMsg(channelIndex)
                 time.sleep(0.1)
+                # self.printReceiveMsg()
                 ReceiveMsg = self.messenger.receive()
                 self.sem.release(1)
                 return ReceiveMsg[1][0]
             else:
                 ReceiveMsg = ('measure value skipped', [0.0,0.0])
+                self.sem.release(1)
                 return ReceiveMsg[1][0]
         except TypeError:
-            print("measured value receive error")
+            print("channel 1 measured value receive error")
             ReceiveMsg = self.messenger.receive()
-            ReceiveMsg = ('measured value receive error', [0.0,0.0])
+            ReceiveMsg = ('channel 1 measured value receive error', [0.0,0.0])
             return ReceiveMsg[1][0]
         
     def TurnOnMeasurements(self):

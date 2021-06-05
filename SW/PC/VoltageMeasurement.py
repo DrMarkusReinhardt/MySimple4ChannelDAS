@@ -30,10 +30,6 @@ class VoltageMeasurementsWindow(QWidget):
     def __init__(self, channelString):
         QWidget.__init__(self)
         
-        # set the command message interface
-        # self.msgIF = MsgInterface()
-                                
-        
         # measured values of voltage (actual and mean)
         self.actualVoltage = 0.0
         self.meanVoltage = 0.0
@@ -46,13 +42,6 @@ class VoltageMeasurementsWindow(QWidget):
         self.createPlotWidget(channelString)
         print("plot widget created")
         self.updatePlot(channelString)
-        
-        # Start the measurement thread
-        # periodSec = 5.0
-        # measurementSlot = self.handleMeasurements;
-        # measurementsThreadObj = MeasurementsThread(measurementSlot,periodSec)
-        # measurementsThreadObj.start()
-        
 
     def createPlotWidget(self,  channelString):
         self.voltagePlotGroupBox = QGroupBox(self.tr(''))
@@ -141,7 +130,7 @@ class VoltageMeasurementsWindow(QWidget):
         return stylesheet    
 
     def updatePlot(self,  channelString):
-        print("update plot")
+        # print("update plot")
         self.plotCanvas.axes.clear()
         self.plotCanvas.axes.plot(self.measuredVoltageArray)
         self.plotCanvas.axes.grid()
@@ -164,6 +153,6 @@ class VoltageMeasurementsWindow(QWidget):
     
     def initMeasurementsArray(self):
         self.maxArraySize = 100
-        self.measuredVoltageArray = 25.0*np.ones(self.maxArraySize+1)
+        self.measuredVoltageArray = 5.0*np.ones(self.maxArraySize+1)
         self.arrayIndex = 0
         self.noValidMeasurements = 0
