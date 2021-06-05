@@ -4,8 +4,6 @@
 #include <Arduino.h>
 #include <Task.h>
 #include <TaskScheduler.h>
-// #include <OneWire.h>
-// #include <DallasTemperature.h>
 #include "Sample4ChannelVoltages.h"
 #define MaxNoChannels 4
 
@@ -14,7 +12,7 @@ volatile float g_measuredVoltages[MaxNoChannels];
 float *voltages;
 
 // The 4-channel voltage sample interface
-Sample4ChannelVoltage voltagesSampler();
+Sample4ChannelVoltages voltagesSampler;
 
 
 // Timed task to do the temperature measurements
@@ -24,7 +22,7 @@ public:
     // Create a new communication task with the activation rate.
     MeasurementsTask(uint32_t _rate);
 
-    void getMeasurementValues(void);
+    void storeMeasurementValues(void);
     void setup(void);
     virtual void run(uint32_t now);
     
@@ -41,7 +39,7 @@ MeasurementsTask::MeasurementsTask(uint32_t _period)
 }
 
 // get the temperature value
-void MeasurementsTask::getMeasurementValues(void)
+void MeasurementsTask::storeMeasurementValues(void)
 {
   for(uint8_t k = 0; k < MaxNoChannels; k++)
      g_measuredVoltages[k] = voltages[k];
@@ -50,12 +48,12 @@ void MeasurementsTask::getMeasurementValues(void)
 // comms setup
 void MeasurementsTask::setup(void)
 {
-  Serial1.println("Setup in MeasurementsTask task started");
+  Serial.println(F("Setup in MeasurementsTask task started"));
   
   // setup the voltages sampler
   voltagesSampler.setup();
   
-  Serial1.println("Setup in MeasurementsTask task done");
+  Serial.println(F("Setup in MeasurementsTask task done"));
 }
 
 void MeasurementsTask::run(uint32_t now)
@@ -63,7 +61,7 @@ void MeasurementsTask::run(uint32_t now)
   // get the measurement value
   voltagesSampler.getSamples();
   voltages = voltagesSampler.returnSamples();
-  getMeasurementValues();
+  storeMeasurementValues();
   
   // Run again in the required number of milliseconds.
   incRunTime(period);

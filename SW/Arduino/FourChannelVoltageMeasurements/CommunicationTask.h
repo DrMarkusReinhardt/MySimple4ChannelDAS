@@ -40,21 +40,22 @@ float CommunicationTask::getMeasuredTemperature()
 // comms setup
 void CommunicationTask::setup(void)
 {
-  Serial1.println("Setup in communications task started");
+  Serial.println(F("Setup in communications task started"));
   
   // Attach callback methods to handle communication of the Mega2560 with the PC
   CM_PC::attachCommandCallbacksPCComms();
     
-  Serial1.println("Setup in communications task done");
+  Serial.println(F("Setup in communications task done"));
 }
 
 void CommunicationTask::run(uint32_t now)
 {
+  // for the test of the serial interface only
+  // CM_PC::testComms();
+
   // Process incoming serial data, and perform callbacks
   CM_PC::cmdMessengerPC.feedinSerialData();
-
-  // send the measured temperature to the PC
-  
+  // CM_PC::testComms();
 
   // Run again in the required number of milliseconds.
   incRunTime(period);

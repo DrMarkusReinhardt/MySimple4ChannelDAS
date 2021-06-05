@@ -20,6 +20,7 @@ class Sample4ChannelVoltages
 public:
    Sample4ChannelVoltages() {};
    void setup();
+   float readChannel(ADS1115_MUX channel);
    void getSamples();
    float* returnSamples() { return voltages; };
 
@@ -48,7 +49,7 @@ void Sample4ChannelVoltages::setup()
   // create the ADC device
   adc = new ADS1115_WE(I2C_ADDRESS);
   if(!adc->init()){
-    Serial.println("ADS1115 not connected!");
+    Serial.println(F("ADS1115 not connected!"));
     while(1); // endless loop if an error happened
   }
 
@@ -141,8 +142,18 @@ void Sample4ChannelVoltages::setup()
    */
   //adc.setAlertPinToConversionReady(); //uncomment if you want to change the default
 
-  Serial.println("ADS1115 setup done");
+  Serial.println(F("ADS1115 setup done"));
   Serial.println();
+}
+
+float Sample4ChannelVoltages::readChannel(ADS1115_MUX channel) 
+{
+  float voltage = 0.0;
+  adc->setCompareChannels(channel);
+  adc->startSingleMeasurement();
+  while(adc->isBusy()){}
+  voltage = adc->getResult_V(); // alternative: getResult_mV for Millivolt
+  return voltage;
 }
 
 void Sample4ChannelVoltages::getSamples() 
@@ -175,14 +186,4 @@ void Sample4ChannelVoltages::getSamples()
   delay(1000);
   digitalWrite(LED_PIN,LOW);
   */
-}
-
-float readChannel(ADS1115_MUX channel) 
-{
-  float voltage = 0.0;
-  adc.setCompareChannels(channel);
-  adc.startSingleMeasurement();
-  while(adc.isBusy()){}
-  voltage = adc.getResult_V(); // alternative: getResult_mV for Millivolt
-  return voltage;
 }

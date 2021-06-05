@@ -4,8 +4,11 @@
 #include <Arduino.h>
 #include <CmdMessenger.h>      // load CmdMessenger library
 #include <Callback.h>
+#include <SoftwareSerial.h>
 
-extern volatile float g_measuredTemperature;
+extern volatile float g_measuredVoltages[];
+
+extern SoftwareSerial SWSerial;
 
 namespace CM_PC 
 {
@@ -19,7 +22,7 @@ float measuredTemperature = 0.0;
 char field_separator_PC   = ',';
 char command_separator_PC = ';';
 char escape_separator_PC  = '/';
-CmdMessenger cmdMessengerPC = CmdMessenger(Serial, field_separator_PC, command_separator_PC);
+CmdMessenger cmdMessengerPC = CmdMessenger(SWSerial, field_separator_PC, command_separator_PC,escape_separator_PC);
 Signal<float> measuredTemperatureSignal;
 
 // the following enum sequence has to correspond to the sequence of the enum in the Arduino part
@@ -40,7 +43,10 @@ enum
   kYouAreReady              , // Command to acknowledge that other is ready
 
   // sent measurements to the PC
-  kSendMeasuredTemperature  , // Command to send the measured temperature to the PC
+  kSendMeasuredVoltage1     , // Command to send the measured voltages1 to the PC
+  kSendMeasuredVoltage2     , // Command to send the measured voltages1 to the PC
+  kSendMeasuredVoltage3     , // Command to send the measured voltages1 to the PC
+  kSendMeasuredVoltage4     , // Command to send the measured voltages1 to the PC
 
   // turn on and off and reset the measurements
   kturnOnMeasurements       , // Command to turn on the measurements
@@ -95,21 +101,21 @@ enum
 
 void OnAcknowledgePC()
 {
-  cmdMessengerPC.sendCmd(kAcknowledge,"to PC: ACK");
+  cmdMessengerPC.sendCmd(kAcknowledge,F("to PC: ACK"));
 }
 
 void OnArduinoReadyPC()
 {
   // In response to ping. We just send a throw-away acknowledgment to say "i'm ready"
-  cmdMessengerPC.sendCmd(kAcknowledge,"to PC: Arduino ready");
+  cmdMessengerPC.sendCmd(kAcknowledge,F("to PC: Arduino ready"));
 }
 
 void OnUnknownCommandPC()
 {
   // Default response for unknown commands and corrupt messages
-  cmdMessengerPC.sendCmd(kError,"to PC: Unknown command");
+  cmdMessengerPC.sendCmd(kError,F("to PC: Unknown command"));
   cmdMessengerPC.sendCmdStart(kYouAreReady);  
-  cmdMessengerPC.sendCmdArg("to PC: Command without attached callback");    
+  cmdMessengerPC.sendCmdArg(F("to PC: Command without attached callback"));    
   cmdMessengerPC.sendCmdArg(cmdMessengerPC.commandID());    
   cmdMessengerPC.sendCmdEnd();
 }
@@ -117,30 +123,45 @@ void OnUnknownCommandPC()
 void OnAskUsIfReadyPC()
 {
   // The other side asks us to send kYouAreReady command, wait for acknowledge
-  int isAck = cmdMessengerPC.sendCmd(kAreYouReady, "Asking PC if ready", true, kAcknowledge, 1000);
+  int isAck = cmdMessengerPC.sendCmd(kAreYouReady, F("Asking PC if ready"), true, kAcknowledge, 1000);
   
   // Now we send back whether or not we got an acknowledgments  
   cmdMessengerPC.sendCmd(kYouAreReady,isAck?1:0);
 }
 
-void OnSendMeasuredTemperaturePC()
+void OnSendMeasuredVoltage1ToPC()
 {
-  cmdMessengerPC.sendBinCmd(kFloatValue,g_measuredTemperature);
+  cmdMessengerPC.sendBinCmd(kFloatValue,g_measuredVoltages[0]);
+}
+
+void OnSendMeasuredVoltage2ToPC()
+{
+  cmdMessengerPC.sendBinCmd(kFloatValue,g_measuredVoltages[1]);
+}
+
+void OnSendMeasuredVoltage3ToPC()
+{
+  cmdMessengerPC.sendBinCmd(kFloatValue,g_measuredVoltages[2]);
+}
+
+void OnSendMeasuredVoltage4ToPC()
+{
+  cmdMessengerPC.sendBinCmd(kFloatValue,g_measuredVoltages[3]);
 }
 
 void OnTurnOnMeasurements()
 {
-  cmdMessengerPC.sendCmd(kAcknowledge,"to PC: turn on measurements");
+  cmdMessengerPC.sendCmd(kAcknowledge,F("to PC: turn on measurements"));
 }
 
 void OnTurnOffMeasurements()
 {
-  cmdMessengerPC.sendCmd(kAcknowledge,"to PC: turn off measurements");
+  cmdMessengerPC.sendCmd(kAcknowledge,F("to PC: turn off measurements"));
 }
 
 void OnResetMeasurements()
 {
-  cmdMessengerPC.sendCmd(kAcknowledge,"to PC: reset measurements");  
+  cmdMessengerPC.sendCmd(kAcknowledge,F("to PC: reset measurements"));  
 }
 
 void OnValuePingPC()
@@ -254,7 +275,7 @@ void OnValuePingPC()
         break;
       }
       default: 
-        cmdMessengerPC.sendCmd(kError,"Unsupported type for valuePing!");  
+        cmdMessengerPC.sendCmd(kError,F("Unsupported type for valuePing!"));  
         break;
    }   
 }
@@ -310,6 +331,11 @@ void OnSendSeriesPC()
   }
 }
 
+void testComms()
+{
+  SWSerial.print(".");
+}
+
 // Attach callback methods to handle communication with the PC
 void attachCommandCallbacksPCComms()
 {
@@ -319,8 +345,17 @@ void attachCommandCallbacksPCComms()
   // acknowledge
   cmdMessengerPC.attach(kAcknowledge,       OnAcknowledgePC);
 
-  // Temperature and current measurements sent to the PC
-  cmdMessengerPC.attach(kSendMeasuredTemperature, OnSendMeasuredTemperaturePC);
+  // voltage1 measurement sent to the PC
+  cmdMessengerPC.attach(kSendMeasuredVoltage1, OnSendMeasuredVoltage1ToPC);
+
+  // voltage1 measurement sent to the PC
+  cmdMessengerPC.attach(kSendMeasuredVoltage2, OnSendMeasuredVoltage2ToPC);
+  
+  // voltage1 measurement sent to the PC
+  cmdMessengerPC.attach(kSendMeasuredVoltage3, OnSendMeasuredVoltage3ToPC);
+  
+  // voltage1 measurement sent to the PC
+  cmdMessengerPC.attach(kSendMeasuredVoltage4, OnSendMeasuredVoltage4ToPC);
 
   // turn on an off and reset the measurements
   cmdMessengerPC.attach(kturnOnMeasurements, OnTurnOnMeasurements);

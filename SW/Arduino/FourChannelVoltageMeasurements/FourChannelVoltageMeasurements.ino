@@ -8,12 +8,15 @@
 
 #include <Arduino.h>
 #include <BlinkerTask.h>
+#include <SoftwareSerial.h>
 #include "CommunicationTask.h"
 #include "MeasurementsTask.h"
 
 #define BlinkerPeriod 1000
 #define CommsPeriod 1000         // period between the activations of the communication task in milliseconds
-#define MeasurementsPeriod 1000 // period between the activations of the measurements task in milliseconds
+#define MeasurementsPeriod 1000  // period between the activations of the measurements task in milliseconds
+
+SoftwareSerial SWSerial(2,3);
 
 BlinkerTask blinker(LED_BUILTIN, BlinkerPeriod);
 CommunicationTask comms(CommsPeriod);
@@ -26,7 +29,11 @@ void setup()
   Serial.begin(9600);
 
   // start the debug serial port
-  Serial1.begin(9600);
+  SWSerial.begin(9600);
+  SWSerial.println(F("SWSerial setup done"));
+
+  // setup the measurements task
+  measurements.setup();
 
   // setup the communication task
   comms.setup();
