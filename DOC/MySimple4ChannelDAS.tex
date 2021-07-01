@@ -127,7 +127,8 @@
 \pagestyle{scrheadings}
 \section{Concept description}
 A project to build-up a simple 4-channel low sample rate, high accuracy (16-bit ADC)
-Data Acquisition System (DAS) to support general universal measurements.\\
+Arduino based Data Acquisition System (DAS) to support general PC controlled universal 
+measurement campaigns.\\
 
 The signals to be measured are fed to a 1:10 divider or via a 1:1 connection to the buffer amplifier of each channel.
 The signals are then ADC converted by the 4 channel ADS1115 ADC on the ADC module.
@@ -154,6 +155,16 @@ SW components:
 \end{itemize}
 
 \section{Hardware setup}
+The internal HW is shown in figure \ref{fig:HWInternals}.
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=1.0\linewidth]{Figures/HWInternals1.pdf}
+	\caption{HW inside the case}
+	\label{fig:HWInternals}
+\end{figure}
+It shows the Arduino Uno board, the ADC board, the USB/Serial converter module, the buffer amplifier (LM324) all mounted on a bread board.
+There are twelve 4mm connectors assembled on the front panel, four for ground connections, four for buffered signals and four for(by a factor of 1:10) attenuated and also buffered signals.
+
 The used ADC module is shown in figure \ref{fig:HWSetup}.
 \begin{figure}[htbp]
 	\centering
@@ -196,7 +207,7 @@ The trace of the measured voltages in the Arduino IDE Serial Monitor after the p
 
 
 \subsection{PC Application}
-The GUI of the Python PC application is shown in figure \ref{fig:ApplicationWindow}. The program reads via the PyCmdMessenger library the four measured voltages from the Arduino board
+The GUI of the Python PC application together with the IDE output is shown in figure \ref{fig:ApplicationWindow}. The program reads via the PyCmdMessenger library the four measured voltages from the Arduino board
 via the USB/Serial module on port /dev/ttyUSB0 and displays the voltages vs. the discrete sample time index in four separate plots.
 The program also allows to store the measured data and to control the measurements via start/stop/reset commands in the GUI.
 \begin{figure}[htbp]
@@ -205,6 +216,15 @@ The program also allows to store the measured data and to control the measuremen
 	\caption[Python PC Application]{Python PC Application}
 	\label{fig:ApplicationWindow}
 \end{figure}
+
+The GUI after more than 100 samples have been received is shown in figure \ref{fig:ApplicationWindow1}.
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=1.0\linewidth]{Figures/ApplicationWindow1.png}
+	\caption[Python PC Application]{Python PC Application}
+	\label{fig:ApplicationWindow1}
+\end{figure}
+
 \newpage
 
 \appendix
