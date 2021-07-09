@@ -173,7 +173,6 @@ The used ADC module is shown in figure \ref{fig:ADCModule}.
 	\label{fig:ADCModule}
 \end{figure}
 
-
 \newpage
 \section{Schematics}
 The schematics are shown in figure \ref{fig:Schematics}.
@@ -218,6 +217,8 @@ The program also allows to store the measured data and to control the measuremen
 	\label{fig:ApplicationWindow}
 \end{figure}
 
+The program is called by the shell script Eval4ChannelVoltageMeasurements which calls the python interpreter to execute the python program Eval4ChanVoltageMeasFromArduino.py.\\
+
 The GUI after more than 100 samples have been received is shown in figure \ref{fig:ApplicationWindow1}.
 \begin{figure}[htbp]
 	\centering
@@ -226,10 +227,5 @@ The GUI after more than 100 samples have been received is shown in figure \ref{f
 	\label{fig:ApplicationWindow1}
 \end{figure}
 
-\newpage
-
-\appendix
-\section{Appendix A}
-\subsection{Appendix A.1}	
 
 \end{document}
