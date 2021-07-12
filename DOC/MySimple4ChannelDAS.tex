@@ -142,7 +142,7 @@ HW components:
 	\item USB/Serial module to connect the PC with the Uno via SoftwareSerial interface and USB connector.
 	\item 4-Channel ADS1115 16-bit ADC module.
 	\item 4-Channel 1x buffer amplifier board, LM324 based.
-	\item 10x / 1x inputs and resistor divider.
+	\item 10x / 1x switchable inputs and resistor divider 
 	\item Simple plastic case
 \end{itemize}
 
@@ -154,7 +154,28 @@ SW components:
 	\item First SW example: Tracing the charging characteristic (voltage and current) of a LiPo cell.
 \end{itemize}
 
+\newpage
+\section{Schematics}
+The schematics are shown in figure \ref{fig:Schematics}.
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=1.0\linewidth]{Figures/MySimple4ChannelDAS.pdf}
+	\caption[Schematics]{Schematics}
+	\label{fig:Schematics}
+\end{figure}
+The input section for each channel consists of the connectors for the 1:1 and the 1:10 path. In the 1:10 path a 1:10 resistor divider divides the input signal
+by 10 and feeds the attenuated signal to the switch that selects the input path. After the switch the signal is fed to the buffer amplifier with a gain factor of 1.0 and from there to one of the four channels of the ADC module.
+The ADC module is controlled from an Arduino Uno that provides also the interface to the PC via a USB/Serial module.
+
 \section{Hardware setup}
+The four channel DAS front view of the case with the sockets and the switches four each of the four channels is shown in figure \ref{fig:HWExternals}.
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[angle=180,width=0.85\linewidth]{Figures/HWExternals.jpeg}
+	\caption{Four channel DAS front view of case)}
+	\label{fig:HWExternals}
+\end{figure}
+
 The internal HW is shown in figure \ref{fig:HWInternals}.
 \begin{figure}[htbp]
 	\centering
@@ -173,15 +194,7 @@ The used ADC module is shown in figure \ref{fig:ADCModule}.
 	\label{fig:ADCModule}
 \end{figure}
 
-\newpage
-\section{Schematics}
-The schematics are shown in figure \ref{fig:Schematics}.
-\begin{figure}[htbp]
-	\centering
-	\includegraphics[width=1.0\linewidth]{Figures/MySimple4ChannelDAS.pdf}
-	\caption[Schematics]{Schematics}
-	\label{fig:Schematics}
-\end{figure}
+
 
 \newpage
 \section{Software}
