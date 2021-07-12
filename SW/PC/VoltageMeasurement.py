@@ -39,7 +39,7 @@ class VoltageMeasurementsWindow(QWidget):
         
         # create the plot widget
         self.createPlotWidget(channelString)
-        print("plot widget created")
+        # print("plot widget created")
         self.updatePlot(channelString)
 
     def createPlotWidget(self,  channelString):
@@ -127,6 +127,6 @@ class VoltageMeasurementsWindow(QWidget):
     
     def initMeasurementsArray(self):
         self.maxArraySize = 100
-        self.measuredVoltageArray = 5.0*np.ones(self.maxArraySize+1)
+        self.measuredVoltageArray = 0.0*np.ones(self.maxArraySize+1)
         self.arrayIndex = 0
         self.noValidMeasurements = 0

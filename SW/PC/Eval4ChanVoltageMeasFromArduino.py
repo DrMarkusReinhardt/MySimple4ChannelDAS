@@ -237,28 +237,28 @@ class MainWindow(QMainWindow):
             # request voltage measurements from the voltage sensor and update the display
             try:
                 # channel 1
-                measuredVoltage1 = self.msgIF.GetMeasuredVoltage(1)*10.0
+                measuredVoltage1 = self.msgIF.GetMeasuredVoltage(1)
                 print("measuredVoltage1 =", measuredVoltage1)
                 self.voltageMeasurementDisplay1.actualVoltageEdit.setText("{:2.3f}".format(measuredVoltage1))
                 self.voltageMeasurementDisplay1.updateMeasurementsArray(measuredVoltage1)
                 self.voltageMeasurementDisplay1.updatePlot("Channel1: ")
                 
                 # channel 2
-                measuredVoltage2 = self.msgIF.GetMeasuredVoltage(2)*10.0
+                measuredVoltage2 = self.msgIF.GetMeasuredVoltage(2)
                 print("measuredVoltage2 =", measuredVoltage2)
                 self.voltageMeasurementDisplay2.actualVoltageEdit.setText("{:2.3f}".format(measuredVoltage2))
                 self.voltageMeasurementDisplay2.updateMeasurementsArray(measuredVoltage2)
                 self.voltageMeasurementDisplay2.updatePlot("Channel2: ")
                 
                 # channel 3
-                measuredVoltage3 = self.msgIF.GetMeasuredVoltage(3)*10.0
+                measuredVoltage3 = self.msgIF.GetMeasuredVoltage(3)
                 print("measuredVoltage3 =", measuredVoltage3)
                 self.voltageMeasurementDisplay3.actualVoltageEdit.setText("{:2.3f}".format(measuredVoltage3))
                 self.voltageMeasurementDisplay3.updateMeasurementsArray(measuredVoltage3)
                 self.voltageMeasurementDisplay3.updatePlot("Channel3: ")
                 
                 # channel 4
-                measuredVoltage4 = self.msgIF.GetMeasuredVoltage(4)*10.0
+                measuredVoltage4 = self.msgIF.GetMeasuredVoltage(4)
                 print("measuredVoltage4 =", measuredVoltage4)
                 self.voltageMeasurementDisplay4.actualVoltageEdit.setText("{:2.3f}".format(measuredVoltage4))
                 self.voltageMeasurementDisplay4.updateMeasurementsArray(measuredVoltage4)
