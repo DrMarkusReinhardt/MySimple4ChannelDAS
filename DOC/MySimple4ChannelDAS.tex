@@ -220,8 +220,13 @@ The trace of the measured voltages in the Arduino IDE Serial Monitor after the p
 
 
 \subsection{PC Application}
-The GUI of the Python PC application together with the IDE output is shown in figure \ref{fig:ApplicationWindow}. The program reads via the PyCmdMessenger library the four measured voltages from the Arduino board
+The GUI of the Python PC application together with the Eric6 IDE is shown in figure \ref{fig:ApplicationWindow} after around 10 voltage samples have been processed for all four channels.
+The program is called by the shell script Eval4ChannelVoltageMeasurements which calls the python interpreter to execute the python program Eval4ChanVoltageMeasFromArduino.py.\\
+
+The program reads via the PyCmdMessenger library the four measured voltages and the status of the scaling switches from the Arduino board
 via the USB/Serial module on port /dev/ttyUSB0 and displays the voltages vs. the discrete sample time index in four separate plots.
+In addition the actual measured voltage values and the voltage scaling values (1:1 or 1:10) chosen by the switches for all channels are displayed below the plots.
+
 The program also allows to store the measured data and to control the measurements via start/stop/reset commands in the GUI.
 \begin{figure}[htbp]
 	\centering
@@ -230,9 +235,8 @@ The program also allows to store the measured data and to control the measuremen
 	\label{fig:ApplicationWindow}
 \end{figure}
 
-The program is called by the shell script Eval4ChannelVoltageMeasurements which calls the python interpreter to execute the python program Eval4ChanVoltageMeasFromArduino.py.\\
 
-The GUI after more than 100 samples have been received is shown in figure \ref{fig:ApplicationWindow1}.
+The program when the scaling of 1:10 is selected for the channels 1 and 3 and the scaling of 1:1 is selected for channels 2 and 4 is shown in figure \ref{fig:ApplicationWindow1}.
 \begin{figure}[htbp]
 	\centering
 	\includegraphics[width=1.0\linewidth]{Figures/ApplicationWindow1.png}

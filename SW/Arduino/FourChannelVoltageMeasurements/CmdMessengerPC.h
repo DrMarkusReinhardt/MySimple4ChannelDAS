@@ -7,6 +7,7 @@
 #include <SoftwareSerial.h>
 
 extern volatile float g_measuredVoltages[];
+extern volatile int g_switchStatus[];
 
 extern SoftwareSerial SWSerial;
 
@@ -42,11 +43,17 @@ enum
   kAskUsIfReady             , // Command to ask other side to ask if ready 
   kYouAreReady              , // Command to acknowledge that other is ready
 
-  // sent measurements to the PC
-  kSendMeasuredVoltage1     , // Command to send the measured voltages1 to the PC
-  kSendMeasuredVoltage2     , // Command to send the measured voltages1 to the PC
-  kSendMeasuredVoltage3     , // Command to send the measured voltages1 to the PC
-  kSendMeasuredVoltage4     , // Command to send the measured voltages1 to the PC
+  // send voltage measurements to the PC
+  kSendMeasuredVoltage1     , // Command to send the measured voltage1 to the PC
+  kSendMeasuredVoltage2     , // Command to send the measured voltage2 to the PC
+  kSendMeasuredVoltage3     , // Command to send the measured voltage3 to the PC
+  kSendMeasuredVoltage4     , // Command to send the measured voltage4 to the PC
+
+  // send the status of the switches to the PC
+  kSendSwitchChannel1       , // Command to send the status of the switch of channel1 to the PC
+  kSendSwitchChannel2       , // Command to send the status of the switch of channel2 to the PC
+  kSendSwitchChannel3       , // Command to send the status of the switch of channel3 to the PC
+  kSendSwitchChannel4       , // Command to send the status of the switch of channel4 to the PC
 
   // turn on and off and reset the measurements
   kturnOnMeasurements       , // Command to turn on the measurements
@@ -147,6 +154,26 @@ void OnSendMeasuredVoltage3ToPC()
 void OnSendMeasuredVoltage4ToPC()
 {
   cmdMessengerPC.sendBinCmd(kFloatValue,g_measuredVoltages[3]);
+}
+
+void OnSendSwitchStatusChannel1ToPC()
+{
+  cmdMessengerPC.sendBinCmd(kInt16Value,g_switchStatus[0]);
+}
+
+void OnSendSwitchStatusChannel2ToPC()
+{
+  cmdMessengerPC.sendBinCmd(kInt16Value,g_switchStatus[1]);
+}
+
+void OnSendSwitchStatusChannel3ToPC()
+{
+  cmdMessengerPC.sendBinCmd(kInt16Value,g_switchStatus[2]);
+}
+
+void OnSendSwitchStatusChannel4ToPC()
+{
+  cmdMessengerPC.sendBinCmd(kInt16Value,g_switchStatus[3]);
 }
 
 void OnTurnOnMeasurements()
@@ -356,6 +383,18 @@ void attachCommandCallbacksPCComms()
   
   // voltage1 measurement sent to the PC
   cmdMessengerPC.attach(kSendMeasuredVoltage4, OnSendMeasuredVoltage4ToPC);
+
+  // status of channel1 switch sent to the PC
+  cmdMessengerPC.attach(kSendSwitchChannel1, OnSendSwitchStatusChannel1ToPC);
+
+  // status of channel2 switch sent to the PC
+  cmdMessengerPC.attach(kSendSwitchChannel2, OnSendSwitchStatusChannel2ToPC);
+
+  // status of channel3 switch sent to the PC
+  cmdMessengerPC.attach(kSendSwitchChannel3, OnSendSwitchStatusChannel3ToPC);
+
+  // status of channel4 switch sent to the PC
+  cmdMessengerPC.attach(kSendSwitchChannel4, OnSendSwitchStatusChannel4ToPC);
 
   // turn on an off and reset the measurements
   cmdMessengerPC.attach(kturnOnMeasurements, OnTurnOnMeasurements);

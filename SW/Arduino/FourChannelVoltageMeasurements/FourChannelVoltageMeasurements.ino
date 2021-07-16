@@ -2,7 +2,8 @@
  * CmdMessenger
  *
  *
- * @author: Dr. Markus Reinhardt, 30th March 2021
+ * @author: Dr. Markus Reinhardt
+ * @date:   30th March 2021
  *
  */
 

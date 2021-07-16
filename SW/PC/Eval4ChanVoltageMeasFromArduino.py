@@ -52,7 +52,7 @@ class MainWindow(QMainWindow):
         self.voltageMeasurementDisplay2 = VoltageMeasurementsWindow("Channel2: ")
         self.voltageMeasurementDisplay3 = VoltageMeasurementsWindow("Channel3: ")
         self.voltageMeasurementDisplay4 = VoltageMeasurementsWindow("Channel4: ")
-
+        
         # the on/off control
         # on / off control values for the measurements
         self.OnOffControlValueMeasurements = 1
@@ -234,39 +234,85 @@ class MainWindow(QMainWindow):
     def handleMeasurements(self):
         # print("handleMeasurements")
         if (self.OnOffControlValueMeasurements == 1):
+            # request switch status from the switch handler and update the display
+            try:
+                statusSwitch1 = self.msgIF.GetSwitchStatus(1)
+                print("statusSwitch1 = ", statusSwitch1)
+                if statusSwitch1 == 1:
+                    statusSwitch1Text = '1:1'
+                    scaleFactor1 = 1.0
+                else:
+                    statusSwitch1Text = '1:10'
+                    scaleFactor1 = 10.0
+                self.voltageMeasurementDisplay1.actualSwitchStatusEdit.setText("{:}".format(statusSwitch1Text))
+                
+                statusSwitch2 = self.msgIF.GetSwitchStatus(2)
+                print("statusSwitch2 = ", statusSwitch2)
+                if statusSwitch2 == 1:
+                    statusSwitch2Text = '1:1'
+                    scaleFactor2 = 1.0
+                else:
+                    statusSwitch2Text = '1:10'
+                    scaleFactor2 = 10.0
+                self.voltageMeasurementDisplay2.actualSwitchStatusEdit.setText("{:}".format(statusSwitch2Text))
+                
+                statusSwitch3 = self.msgIF.GetSwitchStatus(3)
+                print("statusSwitch3 = ", statusSwitch3)
+                if statusSwitch3 == 1:
+                    statusSwitch3Text = '1:1'
+                    scaleFactor3 = 1.0
+                else:
+                    statusSwitch3Text = '1:10'
+                    scaleFactor3 = 10.0
+                self.voltageMeasurementDisplay3.actualSwitchStatusEdit.setText("{:}".format(statusSwitch3Text))
+                
+                statusSwitch4 = self.msgIF.GetSwitchStatus(4)
+                print("statusSwitch4 = ", statusSwitch4)
+                if statusSwitch4 == 1:
+                    statusSwitch4Text = '1:1'
+                    scaleFactor4 = 1.0
+                else:
+                    statusSwitch4Text = '1:10'
+                    scaleFactor4 = 10.0
+                self.voltageMeasurementDisplay4.actualSwitchStatusEdit.setText("{:}".format(statusSwitch4Text))
+             
+            except TypeError:
+                print("failed to get correct measurements")
+        
+        if (self.OnOffControlValueMeasurements == 1):
             # request voltage measurements from the voltage sensor and update the display
             try:
                 # channel 1
-                measuredVoltage1 = self.msgIF.GetMeasuredVoltage(1)
-                print("measuredVoltage1 =", measuredVoltage1)
+                measuredVoltage1 = self.msgIF.GetMeasuredVoltage(1) * scaleFactor1
+                print("measuredVoltage1 = ", measuredVoltage1)
                 self.voltageMeasurementDisplay1.actualVoltageEdit.setText("{:2.3f}".format(measuredVoltage1))
                 self.voltageMeasurementDisplay1.updateMeasurementsArray(measuredVoltage1)
                 self.voltageMeasurementDisplay1.updatePlot("Channel1: ")
-                
+                               
                 # channel 2
-                measuredVoltage2 = self.msgIF.GetMeasuredVoltage(2)
+                measuredVoltage2 = self.msgIF.GetMeasuredVoltage(2) * scaleFactor2
                 print("measuredVoltage2 =", measuredVoltage2)
                 self.voltageMeasurementDisplay2.actualVoltageEdit.setText("{:2.3f}".format(measuredVoltage2))
                 self.voltageMeasurementDisplay2.updateMeasurementsArray(measuredVoltage2)
                 self.voltageMeasurementDisplay2.updatePlot("Channel2: ")
-                
+
                 # channel 3
-                measuredVoltage3 = self.msgIF.GetMeasuredVoltage(3)
+                measuredVoltage3 = self.msgIF.GetMeasuredVoltage(3) * scaleFactor3
                 print("measuredVoltage3 =", measuredVoltage3)
                 self.voltageMeasurementDisplay3.actualVoltageEdit.setText("{:2.3f}".format(measuredVoltage3))
                 self.voltageMeasurementDisplay3.updateMeasurementsArray(measuredVoltage3)
                 self.voltageMeasurementDisplay3.updatePlot("Channel3: ")
-                
+
                 # channel 4
-                measuredVoltage4 = self.msgIF.GetMeasuredVoltage(4)
+                measuredVoltage4 = self.msgIF.GetMeasuredVoltage(4) * scaleFactor4
                 print("measuredVoltage4 =", measuredVoltage4)
                 self.voltageMeasurementDisplay4.actualVoltageEdit.setText("{:2.3f}".format(measuredVoltage4))
                 self.voltageMeasurementDisplay4.updateMeasurementsArray(measuredVoltage4)
                 self.voltageMeasurementDisplay4.updatePlot("Channel4: ")
-
+                
             except TypeError:
                 print("failed to get correct measurements")
-
+                
     def OnOffGenMeasurements(self):
         if self.OnOffControlValueMeasurements == 1:
             self.OnOffControlValueMeasurements = 0

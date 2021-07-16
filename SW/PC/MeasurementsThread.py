@@ -34,7 +34,7 @@ def activateMeasurementTimer(measurementHandler,periodSec):
     print("Measurement thread started")
     timer = QTimer()
     timer.timeout.connect(measurementHandler)
-    timer.start(1000*periodSec)
+    timer.start(2000*periodSec)
     timers.append(timer)
 
 class MsgInterface(object):
@@ -56,6 +56,10 @@ class MsgInterface(object):
                          ['sendMeasuredVoltage2',''],
                          ['sendMeasuredVoltage3',''],
                          ['sendMeasuredVoltage4',''],
+                         ['sendSwitchStatus1',''],
+                         ['sendSwitchStatus2',''],
+                         ['sendSwitchStatus3',''],
+                         ['sendSwitchStatus4',''],
                          ['turnOnMeasurements',''],
                          ['turnOffMeasurements',''],
                          ['resetMeasurements',''],
@@ -114,6 +118,21 @@ class MsgInterface(object):
                         self.messenger.send('sendMeasuredVoltage4')
                     else:
                         print("error of channel index")
+
+    def SendSwitchRequestMsg(self,  channelIndex):
+        if channelIndex == 1:
+            self.messenger.send('sendSwitchStatus1')
+        else:
+            if channelIndex == 2:
+                self.messenger.send('sendSwitchStatus2')
+            else:
+                if channelIndex == 3:
+                    self.messenger.send('sendSwitchStatus3')
+                else:
+                    if channelIndex == 4:
+                        self.messenger.send('sendSwitchStatus4')
+                    else:
+                        print("error of channel index")
                     
     def GetMeasuredVoltage(self,  channelIndex):
         #print("GetMeasuredVoltage1")
@@ -132,13 +151,38 @@ class MsgInterface(object):
             else:
                 ReceiveMsg = ('measure value skipped', [0.0,0.0])
                 self.sem.release(1)
+                self.printReceiveMsg()
                 return ReceiveMsg[1][0]
         except TypeError:
             print("channel 1 measured value receive error")
             ReceiveMsg = self.messenger.receive()
             ReceiveMsg = ('channel 1 measured value receive error', [0.0,0.0])
             return ReceiveMsg[1][0]
-        
+
+    def GetSwitchStatus(self,  channelIndex):
+        #print("GetSwitchStatus")
+        #print("channel index =", channelIndex)        
+        try:
+            if self.sem.available() > 0:
+                self.sem.acquire(1)
+                self.SendSwitchRequestMsg(channelIndex)
+                time.sleep(0.1)        
+                # self.loopCounter = self.loopCounter +1
+                # print("loop counter = ", self.loopCounter)
+                # self.printReceiveMsg()
+                ReceiveMsg = self.messenger.receive()
+                self.sem.release(1)
+                return ReceiveMsg[1][0]
+            else:
+                ReceiveMsg = ('measure value skipped', [0.0,0.0])
+                self.sem.release(1)
+                return ReceiveMsg[1][0]
+        except TypeError:
+            print("Switch status receive error")
+            ReceiveMsg = self.messenger.receive()
+            ReceiveMsg = ('Switch status receive error', [0.0,0.0])
+            return ReceiveMsg[1][0]
+
     def TurnOnMeasurements(self):
         if self.sem.available() > 0:
             self.sem.acquire(1)

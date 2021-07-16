@@ -42,7 +42,7 @@ private:
 void Sample4ChannelVoltages::setup() 
 {
   Wire.begin();
-  // Serial.begin(9600);
+  Serial.begin(9600);
 
   pinMode(LED_PIN, OUTPUT);
 
@@ -160,22 +160,22 @@ void Sample4ChannelVoltages::getSamples()
 {
   float voltage = 0.0;
 
-  Serial.print("0: ");
+  Serial.print("Voltages: CH1: ");
   voltage = readChannel(ADS1115_COMP_0_GND);
   voltages[0] = voltage;
   Serial.print(voltage);
 
-  Serial.print(",   1: ");
+  Serial.print(", CH2: ");
   voltage = readChannel(ADS1115_COMP_1_GND);
   voltages[1] = voltage;
   Serial.print(voltage);
   
-  Serial.print(",   2: ");
+  Serial.print(", CH3: ");
   voltage = readChannel(ADS1115_COMP_2_GND);
   voltages[2] = voltage;
   Serial.print(voltage);
 
-  Serial.print(",   3: ");
+  Serial.print(", CH4: ");
   voltage = readChannel(ADS1115_COMP_3_GND);
   voltages[03] = voltage;
   Serial.println(voltage);
