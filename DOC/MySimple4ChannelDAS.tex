@@ -126,9 +126,9 @@
 \newpage
 \pagestyle{scrheadings}
 \section{Concept description}
-A project to build-up a simple 4-channel low sample rate, high accuracy (16-bit ADC)
+A simple 4-channel low sample rate, high accuracy (16-bit ADC)
 Arduino based Data Acquisition System (DAS) to support general PC controlled universal 
-measurement campaigns.\\
+measurement campaigns has been built.\\
 
 The signals to be measured are fed to a 1:10 divider or via a 1:1 connection to the buffer amplifier of each channel.
 The signals are then ADC converted by the 4 channel ADS1115 ADC on the ADC module.
@@ -136,26 +136,25 @@ The Arduino Uno is controlling the ADS1115 and receiving the digitized signals v
 The data is then sent to the PC via the SoftwareSerial port, a USB/Serial module using the CmdMessenger library to the PC.
 On the PC a Python (PyQt) or C++ (Qt) program using also the (Py)CmdMessenger library is receiving, evaluating and displaying the data.
 
-HW components:
+The projects consists of the following main HW components:
 \begin{itemize}
-	\item Arduino Uno
-	\item USB/Serial module to connect the PC with the Uno via SoftwareSerial interface and USB connector.
-	\item 4-Channel ADS1115 16-bit ADC module.
-	\item 4-Channel 1x buffer amplifier board, LM324 based.
-	\item 10x / 1x switchable inputs and resistor divider 
-	\item Simple plastic case
+	\item An Arduino Uno to control the measurements and to report the measurements to the PC.
+	\item An USB/Serial module to connect the PC with the Uno via the SoftwareSerial interface and an USB connector.
+	\item A 4-Channel ADS1115 16-bit ADC module.
+	\item A 4-Channel 1x buffer amplifier board, LM324 based.
+	\item 4-Channel signal paths with 1:10 or 1:1 signal scaling selected by switches and related resistor dividers. 
+	\item A cheap plastic case.
 \end{itemize}
 
-SW components:
+The projects consists of the following main SW components:
 \begin{itemize}
-	\item Arduino sketch to control the ADC module and send the data via the serial interface to the PC.
-	\item C++ / Qt based software library to sample, store and evaluate data from up to 4 channels.
-	\item PyQt based Python program running on the PC to receive and store data from up to 4 channels.
-	\item First SW example: Tracing the charging characteristic (voltage and current) of a LiPo cell.
+	\item An Arduino sketch to control the ADC module and to send the data and the scaling switch states via the serial interface to the PC.
+	\item A C++ / Qt based software library to sample, store and evaluate data from up to 4 channels.
+	\item A PyQt based Python program running on the PC to receive and store the data from up to 4 channels and to scale the received signals according to the selected and reported scaling states.
 \end{itemize}
 
 \newpage
-\section{Schematics}
+\section{Schematics} 
 The schematics are shown in figure \ref{fig:Schematics}.
 \begin{figure}[htbp]
 	\centering
@@ -163,8 +162,9 @@ The schematics are shown in figure \ref{fig:Schematics}.
 	\caption[Schematics]{Schematics}
 	\label{fig:Schematics}
 \end{figure}
-The input section for each channel consists of the connectors for the 1:1 and the 1:10 path. In the 1:10 path a 1:10 resistor divider divides the input signal
-by 10 and feeds the attenuated signal to the switch that selects the input path. After the switch the signal is fed to the buffer amplifier with a gain factor of 1.0 and from there to one of the four channels of the ADC module.
+The input section for each channel consists of the connectors for the 1:1 and the 1:10 scaling path. In the 1:10 path a resistor divider divides the input signal
+by 10 and feeds the attenuated signal to the switch that selects the input path. After the switch the signal is fed to the buffer amplifier with has a gain factor of 1.0 and from there to one of the four channels of the ADC module.
+Each switch is a DPDT type switch. One path is used for switching of the scaling path, the other for the reporting of the switch state to the micro-controller. 
 The ADC module is controlled from an Arduino Uno that provides also the interface to the PC via a USB/Serial module.
 
 \section{Hardware setup}
@@ -175,6 +175,8 @@ The four channel DAS front view of the case with the sockets and the switches fo
 	\caption{Four channel DAS front view of case)}
 	\label{fig:HWExternals}
 \end{figure}
+The upper row of the sockets are the inputs of the paths with 1:10 scaling of the signals, the middle row of sockets are the inputs of the paths with 1:1 scaling of the signals.
+The lower row of the sockets are the ground connections.
 
 The internal HW is shown in figure \ref{fig:HWInternals}.
 \begin{figure}[htbp]
@@ -184,7 +186,8 @@ The internal HW is shown in figure \ref{fig:HWInternals}.
 	\label{fig:HWInternals}
 \end{figure}
 It shows the Arduino Uno board, the ADC board, the USB/Serial converter module, the buffer amplifier (LM324) all mounted on a bread board.
-There are twelve 4mm connectors assembled on the front panel, four for ground connections, four for buffered signals and four for(by a factor of 1:10) attenuated and also buffered signals.
+There are twelve 4mm connectors assembled on the front panel, four for ground connections, four for buffered signals and four for (by a factor of 1:10) 
+attenuated and also buffered signals.
 
 The used ADC module is shown in figure \ref{fig:ADCModule}.
 \begin{figure}[htbp]
@@ -193,8 +196,6 @@ The used ADC module is shown in figure \ref{fig:ADCModule}.
 	\caption{ADC module with ADS1115}
 	\label{fig:ADCModule}
 \end{figure}
-
-
 
 \newpage
 \section{Software}
@@ -209,15 +210,14 @@ Arduino digital pins 2 (RX) and 3 (TX) are used by the SoftwareSerial library.
 
 The third task is the measurement task that handles the I2C interface to the ADC module to get the measurement values. The standard I2C pins of the Arduino Uno are used here, i.~e. Pins A4/SDA and A5/SCL). Pin A0 is used for the ADC module's ALERT pin interfacing.
 
-The measured voltages are also printed to the standard Arduino Serial port (/dev/ttyACM0) and can be watched with the Arduino Serial Monitor of the IDE.
+The measured voltages and the status of the scale switches are also printed to the standard Arduino Serial port (/dev/ttyACM0) and can be watched with the Arduino Serial Monitor of the IDE.
 The trace of the measured voltages in the Arduino IDE Serial Monitor after the program setup is done is shown in figure \ref{fig:ArduinoSerialMonitorTrace}.
 \begin{figure}[htbp]
 	\centering
 	\includegraphics[width=0.9\linewidth]{Figures/ArduinoSerialMonitorTrace.png}
-	\caption[Arduino Serial Monitor: Trace of four measured voltages]{Arduino Serial Monitor: Trace of the four measured voltages}
+	\caption[Arduino Serial Monitor: Trace of four measured voltages and scale switches]{Arduino Serial Monitor: Trace of the four measured voltages and scale switches}
 	\label{fig:ArduinoSerialMonitorTrace}
 \end{figure}
-
 
 \subsection{PC Application}
 The GUI of the Python PC application together with the Eric6 IDE is shown in figure \ref{fig:ApplicationWindow} after around 10 voltage samples have been processed for all four channels.
@@ -225,6 +225,7 @@ The program is called by the shell script Eval4ChannelVoltageMeasurements which 
 
 The program reads via the PyCmdMessenger library the four measured voltages and the status of the scaling switches from the Arduino board
 via the USB/Serial module on port /dev/ttyUSB0 and displays the voltages vs. the discrete sample time index in four separate plots.
+The scaling of the ordinate of the plots is done automatically with the reception of each new sample. 
 In addition the actual measured voltage values and the voltage scaling values (1:1 or 1:10) chosen by the switches for all channels are displayed below the plots.
 
 The program also allows to store the measured data and to control the measurements via start/stop/reset commands in the GUI.
@@ -235,8 +236,9 @@ The program also allows to store the measured data and to control the measuremen
 	\label{fig:ApplicationWindow}
 \end{figure}
 
+The program allows to (re-)start, stop and reset the measurements.
 
-The program when the scaling of 1:10 is selected for the channels 1 and 3 and the scaling of 1:1 is selected for channels 2 and 4 is shown in figure \ref{fig:ApplicationWindow1}.
+The GUI of the PC program when the scaling of 1:10 is selected for the channels 1 and 3 and the scaling of 1:1 is selected for channels 2 and 4 is shown in figure \ref{fig:ApplicationWindow1}.
 \begin{figure}[htbp]
 	\centering
 	\includegraphics[width=1.0\linewidth]{Figures/ApplicationWindow1.png}
